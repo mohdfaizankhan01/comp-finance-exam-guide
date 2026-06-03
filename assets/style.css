@@ -462,7 +462,85 @@ tbody tr:hover { background: var(--bg-soft); }
 
 /* print */
 @media print {
-  .sidebar, .topbar, #to-top, .revise-bar, .page-nav, .chart-controls { display: none !important; }
+  .sidebar, .topbar, #to-top, .revise-bar, .page-nav, .chart-controls, #readbar { display: none !important; }
   .content { padding: 0; } details.acc[open] .acc-body { display: block; }
   details.acc > summary .chev { display: none; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
+
+/* ===========================================================
+   Animations — classy, GPU-cheap, reduced-motion aware
+   =========================================================== */
+
+/* slim reading-progress bar */
+#readbar {
+  position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 100;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-bottom-right-radius: 4px; pointer-events: none;
+  transition: width .12s linear;
+}
+html[data-theme="dark"] #readbar { box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 70%, transparent); }
+
+/* refined hover micro-interactions (subtle, user-initiated → always on) */
+.nav-link { transition: background .18s ease, color .18s ease, transform .2s cubic-bezier(.16,1,.3,1); }
+.nav-link:hover { transform: translateX(3px); }
+.nav-link.active::before {
+  content:""; position:absolute; left:3px; top:18%; height:64%; width:3px;
+  border-radius:3px; background: var(--accent);
+  animation: tabIn .4s cubic-bezier(.16,1,.3,1) both;
+}
+.tcard .ic { transition: transform .4s cubic-bezier(.34,1.56,.64,1), background .25s; }
+.tcard:hover .ic { transform: translateY(-3px) scale(1.09) rotate(-3deg); }
+.tcard h4 { transition: color .2s ease; }
+.tcard:hover h4 { color: var(--accent); }
+.chart-card { transition: transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s, border-color .3s; }
+.chart-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.brand .logo { transition: transform .45s cubic-bezier(.34,1.56,.64,1), box-shadow .3s; }
+.brand:hover .logo { transform: rotate(-7deg) scale(1.07); box-shadow: var(--shadow-md); }
+#to-top { transition: opacity .25s, transform .4s cubic-bezier(.34,1.56,.64,1), background .15s, color .15s; }
+.btn, .pill, details.acc > summary .tag { transition: all .2s ease; }
+
+/* animated underline for in-content paragraph links */
+.content-inner p a, .acc-body a, .legend a {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-size: 0% 1.5px; background-repeat: no-repeat; background-position: 0 100%;
+  transition: background-size .3s ease; text-decoration: none;
+}
+.content-inner p a:hover, .acc-body a:hover, .legend a:hover { background-size: 100% 1.5px; }
+
+/* sheen sweep across the primary button */
+.btn.primary { position: relative; overflow: hidden; }
+.btn.primary::after {
+  content:""; position:absolute; top:0; left:-130%; width:55%; height:100%;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,.38), transparent);
+  transform: skewX(-22deg); transition: left .65s ease; pointer-events:none;
+}
+.btn.primary:hover::after { left: 150%; }
+
+@keyframes tabIn { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes riseIn { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform:none; } }
+@keyframes accChild { from { opacity:0; transform: translateY(9px); } to { opacity:1; transform:none; } }
+@keyframes pulseGood { from { box-shadow:0 0 0 0 color-mix(in srgb, var(--good) 55%, transparent); }
+  to { box-shadow:0 0 0 16px transparent; } }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* scroll reveal — JS adds .reveal so no-JS users always see content */
+  .reveal {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .75s cubic-bezier(.16,1,.3,1), transform .75s cubic-bezier(.16,1,.3,1);
+  }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* one-time page entrance for the title block */
+  .page-kicker, .page-title, .page-lede,
+  .hero .pill, .hero h1, .hero p {
+    animation: riseIn .85s cubic-bezier(.16,1,.3,1) both;
+  }
+  .page-title, .hero h1 { animation-delay: .07s; }
+  .page-lede, .hero p   { animation-delay: .15s; }
+
+  /* accordion content gently rises in when opened */
+  details.acc[open] .acc-body > * { animation: accChild .5s cubic-bezier(.16,1,.3,1) both; }
+
+  .btn.done-state.justmarked { animation: pulseGood .65s ease-out; }
 }

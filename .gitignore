@@ -7,3 +7,6 @@ Thumbs.db
 
 # Never commit the copyrighted source lecture PDFs
 *.pdf
+
+# Local Netlify folder
+.netlify

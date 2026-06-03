@@ -206,13 +206,58 @@
     });
   }
 
+  /* ---- reading progress bar ---- */
+  function wireReadbar() {
+    const bar = document.createElement("div"); bar.id = "readbar"; document.body.appendChild(bar);
+    const upd = () => {
+      const h = document.documentElement, max = h.scrollHeight - h.clientHeight;
+      bar.style.width = (max > 0 ? (h.scrollTop / max * 100) : 0) + "%";
+    };
+    addEventListener("scroll", upd, { passive: true }); addEventListener("resize", upd); upd();
+  }
+
+  /* ---- scroll reveal (class added by JS → no-JS keeps content visible) ---- */
+  function wireReveal() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const els = [...document.querySelectorAll(
+      ".concept, .chart-card, .tcard, .group-head, .revise-bar, .page-nav, .content-inner > .callout")];
+    const io = new IntersectionObserver((ents) => {
+      ents.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -7% 0px", threshold: 0.04 });
+    let cardI = 0;
+    els.forEach(el => {
+      el.classList.add("reveal");
+      if (el.classList.contains("tcard")) el.style.transitionDelay = (Math.min(cardI++, 8) * 0.045) + "s";
+      const r = el.getBoundingClientRect();
+      if (r.top < innerHeight * 0.95 && r.bottom > 0) el.classList.add("in"); // visible at load → no flash
+      else io.observe(el);
+    });
+  }
+
+  /* ---- count-up for the progress dial ---- */
+  function countUp(el, to) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || to <= 0) return;
+    const dur = 750, t0 = performance.now();
+    (function step(now) {
+      const p = Math.min((now - t0) / dur, 1), e = 1 - Math.pow(1 - p, 3);
+      if (el.childNodes[0]) el.childNodes[0].nodeValue = Math.round(e * to);
+      if (p < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+
   /* ---- init ---- */
   document.addEventListener("DOMContentLoaded", () => {
     buildSidebar(); buildHome(); buildPageNav();
     wireSearch(); wireScrollspy(); wireToTop(); wireMobile();
     document.querySelectorAll("[data-theme-toggle]").forEach(b => b.addEventListener("click", toggleTheme));
     const rb = document.getElementById("revise-btn");
-    if (rb) rb.addEventListener("click", () => toggleDone(rb.dataset.id));
+    if (rb) rb.addEventListener("click", () => {
+      toggleDone(rb.dataset.id);
+      if (rb.classList.contains("done-state")) {
+        rb.classList.add("justmarked");
+        setTimeout(() => rb.classList.remove("justmarked"), 700);
+      }
+    });
     const reset = document.getElementById("reset-progress");
     if (reset) reset.addEventListener("click", () => { if (confirm("Reset all revision progress?")) { setDone({}); reflect(); } });
     // inject accordion chevrons
@@ -228,6 +273,9 @@
     const t = document.documentElement.getAttribute("data-theme");
     applyTheme(t);
     reflect();
+    wireReadbar(); wireReveal();
+    const pe = document.getElementById("dash-pct");
+    if (pe) countUp(pe, parseInt(pe.textContent, 10) || 0);
   });
 
   /* expose palette helper for charts */
