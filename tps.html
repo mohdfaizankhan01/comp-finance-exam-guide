@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practical Work (TPs) — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar"><button class="icon-btn" id="menu-btn"><span class="menu-ic"></span></button><strong style="font-size:15px">Practical Work (TPs)</strong><button class="icon-btn" data-theme-toggle style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button></div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Practical Work · Your submissions</div>
+    <h1 class="page-title">Practical Work (TPs)</h1>
+    <p class="page-lede">The <em>logic</em> behind each TP you submitted — what it tested, the reasoning, and the takeaways an examiner can probe. No code here: just the ideas you should be able to defend out loud.</p>
+
+    <div class="callout info"><span class="ttl">How to use this</span> Examiners often say "tell me about the practical you did on X." Each card below gives you a clean story: <b>what you did → the logic → what to remember → likely questions</b>. Every TP links to its theory page for the underlying derivations.</div>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#tp01">TP01 — Returns & TVM</a></li>
+      <li><a href="#tp02">TP02 — Correlation, ACF, AR(1), VaR</a></li>
+      <li><a href="#tp03">TP03 — Seasonality, AR regimes, Vasicek</a></li>
+      <li><a href="#tp04">TP04 — Moving averages & intrinsic time</a></li>
+      <li><a href="#tp05">TP05 — Limit order book (Maslov)</a></li>
+      <li><a href="#tp06">TP06 — Execution strategies</a></li>
+      <li><a href="#tp07">TP07 — Optimal portfolio (Markowitz)</a></li>
+      <li><a href="#tp08">TP08 — Minority Game</a></li>
+      <li><a href="#tp09">TP09 — Option pricing (BS vs tree)</a></li>
+      <li><a href="#tp10">TP10 — The Greeks</a></li>
+    </ul></div>
+
+    <!-- TP01 -->
+    <div class="concept" id="tp01">
+      <h2 class="section-h">TP01 — Returns & Time Value of Money</h2>
+      <p style="margin-top:2px"><a href="returns.html">↗ Theory: Returns & Time Value of Money</a></p>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What you did</div>
+        <p>Computed simple returns and continuously-compounded (log) returns on price data, built a two-stock portfolio (Microsoft + Starbucks), and computed present/future values.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>The logic</div>
+        <ul>
+          <li>Simple return \(R=P_t/P_{t-1}-1\) compounds <b>multiplicatively</b> over time; log return \(r=\ln(P_t/P_{t-1})\) compounds <b>additively</b> and is symmetric.</li>
+          <li>Portfolio return is the <b>weighted average</b> of the asset returns, \(R_p=\sum_i w_i R_i\) — returns combine linearly <em>across assets</em> but multiplicatively <em>across time</em>.</li>
+          <li>Time value: \(FV=PV(1+R)^n\), and discounting reverses it; continuous compounding gives the \(e^{rn}\) limit.</li>
+        </ul></div>
+      <div class="callout good"><span class="ttl">Remember</span> Log return is always slightly below the simple return (\(\ln(1+R)\lt R\)); use log returns for time aggregation, simple returns (weighted) for portfolios.</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> TP01 probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why use log returns instead of simple returns?</div><div class="a">They add over time (no products), are symmetric, and linearise the maths — ideal for modelling and aggregation. The downside: a portfolio's log return is not the weighted average of asset log returns, so for portfolios use simple returns.</div></div>
+          <div class="qa"><div class="q">How did you combine the two stocks?</div><div class="a">Weighted average of their simple returns by capital allocation; the portfolio's expected return is \(\sum w_iE[R_i]\), but its risk needs the covariance (the topic of TP07).</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- TP02 -->
+    <div class="concept" id="tp02">
+      <h2 class="section-h">TP02 — Correlation, hidden ACF, AR(1) & VaR</h2>
+      <p style="margin-top:2px"><a href="timeseries.html">↗ Theory: Time Series & AR Models</a> · <a href="returns.html">Returns/risk</a></p>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What you did</div>
+        <p>Four parts: (1) correlation of two constructed variables, (2) a sine wave hidden in noise recovered by the ACF, (3) an AR(1) model fitted to EUR/USD daily returns, (4) FX risk via EWMA volatility and 1-day Value-at-Risk.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>The logic</div>
+        <ul>
+          <li><b>Slope ≠ correlation:</b> the regression slope is \(\beta=\mathrm{Cov}(X,Y)/\mathrm{Var}(X)\), correlation is \(\rho=\mathrm{Cov}(X,Y)/(\sigma_X\sigma_Y)\). They coincide only when \(\sigma_X=\sigma_Y\). (You found slope ≈ 0.28 vs ρ ≈ 0.79.)</li>
+          <li><b>Hidden sine:</b> with signal-to-noise ≈ 1 the sine is invisible in the raw plot, but the ACF shows clean peaks at multiples of the period \(T\) — the whole point of looking at the ACF instead of the raw series.</li>
+          <li><b>AR(1) on returns:</b> prices are non-stationary, returns are stationary; \(\varphi_1=\rho_1\approx-0.15\) (weak mean reversion). Since the ACF sits inside the confidence band, returns are ≈ white noise, so AR predictions are poor — that's the <em>correct</em> output, not a bug. Higher \(p\) doesn't help (no significant autocorrelation to exploit).</li>
+          <li><b>EWMA & VaR:</b> \(\sigma_t^2=\lambda\sigma_{t-1}^2+(1-\lambda)r_{t-1}^2\) (RiskMetrics \(\lambda=0.94\)) reacts to recent returns; 1-day VaR \(=z_\alpha\,\sigma_t\,V_0\) with \(z_{99\%}=2.326,\ z_{95\%}=1.645\). The bands widen in volatile stretches.</li>
+        </ul></div>
+      <div class="callout good"><span class="ttl">Remember</span> Near-zero, statistically-insignificant autocorrelation of returns is exactly what the weak-form EMH predicts — "the model failing to predict" <em>is</em> the finding. EWMA's \(\lambda\) sets memory: 0.94 ⇒ each new day gets 6% weight.</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> TP02 probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Difference between a regression slope and a correlation?</div><div class="a">Both share the covariance in the numerator, but the slope divides by \(\mathrm{Var}(X)\) only, while correlation divides by both standard deviations (and is unit-free, in [−1,1]). Equal only if the two variances match.</div></div>
+          <div class="qa"><div class="q">Your AR(1) barely predicted anything — is that a failure?</div><div class="a">No. \(\varphi_1\approx-0.15\) with an ACF inside the confidence band means the returns are essentially white noise. The model correctly says "tomorrow ≈ noise". Adding lags can't manufacture signal that isn't there.</div></div>
+          <div class="qa follow"><div class="q">What does VaR at 99% actually mean, and what's its key assumption here?</div><div class="a">A loss you'd exceed only 1% of the time over one day. This parametric VaR assumes returns are normal with volatility \(\sigma_t\); fat tails mean it can understate true tail risk — a caveat worth stating.</div></div>
+          <div class="qa follow"><div class="q">Why EWMA over a simple rolling standard deviation?</div><div class="a">EWMA weights recent observations more, so it reacts to volatility changes (clustering) instead of treating a shock from 50 days ago the same as yesterday's.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- TP03 -->
+    <div class="concept" id="tp03">
+      <h2 class="section-h">TP03 — Seasonality, AR(1) regimes & the Vasicek model</h2>
+      <p style="margin-top:2px"><a href="timeseries.html">↗ Theory: Time Series</a> · <a href="markets.html">Markets (seasonality)</a> · <a href="bonds-basics.html">Bonds</a></p>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What you did</div>
+        <p>Measured intraday/weekly seasonality in EUR/USD tick activity; simulated AR(1) across parameter regimes; rewrote the discrete Vasicek interest-rate model as an AR(1); and answered bonds-vs-stocks vocabulary.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>The logic</div>
+        <ul>
+          <li><b>Seasonality:</b> binning ticks into 15-minute windows reveals a daily rhythm — quiet Asian session (≈22:00–06:00 UTC), pickup at the London open, and a peak around 13:00 UTC when London and New York overlap. This is a classic stylised fact.</li>
+          <li><b>AR(1) regimes</b> driven by \(\varphi_1\): \(0.5\) stationary (shocks halve each step, fast mean reversion); \(0.98\) still stationary but "long memory" (slow decay, easily mistaken for a random walk); \(1.0\) random walk (shocks never decay — the classic stock-price model); \(1.05\) explosive (exponential divergence).</li>
+          <li><b>Vasicek:</b> \(r_t-r_{t-1}=\kappa(\theta-r_{t-1})+\sigma\epsilon_t\) rearranges to \(r_t=\underbrace{\kappa\theta}_{c}+\underbrace{(1-\kappa)}_{\varphi_1}r_{t-1}+\sigma\epsilon_t\) — an AR(1) with drift. The rate is pulled back to the long-run level \(\theta\) like a rubber band; \(\kappa\) is the pull strength.</li>
+        </ul></div>
+      <div class="callout good"><span class="ttl">Remember</span> \(|\varphi_1|\lt1\) = stationary, \(\varphi_1=1\) = unit root / random walk (non-stationary), \(\varphi_1\gt1\) = explosive. Mean reversion ⇔ \(0\lt\varphi_1\lt1\), and Vasicek's \(\varphi_1=1-\kappa\).</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> TP03 probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Given a value of \(\varphi_1\), what behaviour do you expect?</div><div class="a">0&lt;φ₁&lt;1 → mean-reverting/stationary (smaller = faster reversion); φ₁≈1 → random walk (long wanders, no equilibrium); φ₁&gt;1 → explosive growth; φ₁&lt;0 → alternating/counter-trending.</div></div>
+          <div class="qa"><div class="q">How is Vasicek related to AR(1)?</div><div class="a">It <em>is</em> an AR(1) with drift: \(\varphi_1=1-\kappa\), long-run mean \(\theta=c/(1-\varphi_1)\). κ controls how strongly the rate is pulled back to θ.</div></div>
+          <div class="qa follow"><div class="q">Why does FX activity peak mid-afternoon UTC?</div><div class="a">The London–New York session overlap — the two largest trading centres are open simultaneously, maximising liquidity and tick frequency.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- TP04 -->
+    <div class="concept" id="tp04">
+      <h2 class="section-h">TP04 — Moving averages & intrinsic time</h2>
+      <p style="margin-top:2px"><a href="data-averages.html">↗ Theory: Data, Moving Averages & Intrinsic Time</a></p>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What you did</div>
+        <p>Implemented SMA and EMA and compared their smoothing/lag; computed mid-prices; detected directional changes for a threshold \(\delta\); and verified a scaling law on a log-log plot.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>The logic</div>
+        <ul>
+          <li><b>SMA vs EMA:</b> close at small windows; as the window grows (or \(\alpha\) shrinks), the average is smoother but lags more. EMA reacts faster for the same smoothness because it weights recent data; \(\alpha=0.5\) ≈ raw data, \(\alpha=0.01\) very smooth and slow. Sanity checks: SMA(N=1)=series, EMA(α=1)=series.</li>
+          <li><b>Directional change:</b> instead of sampling at fixed time, log an event when the price reverses by \(\delta\) from the last extreme. With \(\delta=1\%\) you get only ~15–20 events over two months — it filters out noise and keeps genuine reversals (intrinsic time).</li>
+          <li><b>Scaling law:</b> count of directional changes vs \(\delta\) is a straight line on a log-log plot ⇒ a <b>power law</b> (≈ a million events at \(\delta=10^{-5}\), ≈ 20 at \(10^{-2}\)). This connects intrinsic time to physical time.</li>
+        </ul></div>
+      <div class="callout good"><span class="ttl">Remember</span> Every moving average trades smoothness for lag — you cannot have both. A straight line on a log-log plot is the signature of a power-law (scaling) relationship.</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> TP04 probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">SMA vs EMA — which and why?</div><div class="a">EMA in practice: it's memory-light (one previous value), weights recent data, and is more responsive for a given smoothness. SMA is simpler but needs the full window and lags equally on all points.</div></div>
+          <div class="qa"><div class="q">What is a directional change and why use intrinsic time?</div><div class="a">An event triggered when price reverses by δ from the last extreme. Intrinsic time samples by market activity rather than the arbitrary clock, so it's dense when volatile and ignores noise when calm.</div></div>
+          <div class="qa follow"><div class="q">Why is the log-log plot straight, and what does the slope mean?</div><div class="a">Because the number of directional changes follows a power law in δ; on log-log a power law is a line whose slope is the scaling exponent linking the threshold to event frequency.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- TP05 -->
+    <div class="concept" id="tp05">
+      <h2 class="section-h">TP05 — Limit order book: the Maslov model</h2>
+      <p style="margin-top:2px"><a href="lob.html">↗ Theory: Limit Order Book</a></p>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What you did</div>
+        <p>Simulated the Maslov order-driven market (one trader per step; probability of buy/sell \(q\); probability of limit vs market order \(r\)), then studied returns, spread and book depth — and extended it with heterogeneous order sizes and aggressive/passive traders.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>The logic</div>
+        <ul>
+          <li><b>Mid vs market price:</b> the market price only changes when a <em>trade</em> happens; the mid updates whenever a new limit order arrives — so they track but aren't identical.</li>
+          <li><b>Fat tails:</b> the return histogram is far from normal — a tall thin centre with heavy tails (excess kurtosis ≈ 13). Big jumps occur when a market order eats through to a far limit order.</li>
+          <li><b>What it reproduces vs misses:</b> fat tails ✓ and near-zero return autocorrelation ✓, but <b>no real volatility clustering</b> (a known limitation of the basic model).</li>
+          <li><b>Spread & depth:</b> the spread widens when market orders consume the book faster than limit orders refill it; depth is a hump peaked near the best quote (because \(K=1\) tick).</li>
+          <li><b>Parameters:</b> more limit orders (\(r\to0.9\)) → deeper, more liquid book, lower volatility; more market orders (\(r\to0.1\)) → higher volatility. Heterogeneous order sizes widen price swings but actually <em>reduce</em> kurtosis (impact spread across levels).</li>
+        </ul></div>
+      <div class="callout good"><span class="ttl">Remember</span> A very simple model reproduces fat tails and (lack of) autocorrelation, but not volatility clustering — that's the gap that motivates richer agent-based models.</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> TP05 probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">What stylised facts does Maslov reproduce, and which does it miss?</div><div class="a">Reproduces: fat-tailed returns and near-zero return autocorrelation. Misses: volatility clustering (and realistic long-memory) — the model is too homogeneous.</div></div>
+          <div class="qa"><div class="q">Why do the mid and market prices differ?</div><div class="a">The mid is (bid+ask)/2 and moves on any new best quote (limit order); the market/transaction price only updates when an actual trade executes.</div></div>
+          <div class="qa follow"><div class="q">How does the limit/market mix (\(r\)) change the market?</div><div class="a">More limit orders deepen the book and damp volatility (liquidity); more market orders thin it and raise volatility and spread.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- TP06 -->
+    <div class="concept" id="tp06">
+      <h2 class="section-h">TP06 — Execution strategies</h2>
+      <p style="margin-top:2px"><a href="execution.html">↗ Theory: Algorithmic Execution</a></p>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What you did</div>
+        <p>Executed a 12 M EUR buy on EUR/USD over 20 random 3-hour windows using TWAP, VWAP, and a price-adaptive directional-change (DC) strategy, benchmarked against the decision price, and tested volatility sensitivity.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>The logic</div>
+        <ul>
+          <li><b>TWAP:</b> 12 equal slices every 15 min. Mean cost +2.60 pips vs the decision price (the market trended up, so spreading the buy paid progressively more), with a large std (~16.7 pips) — the result depends heavily on luck.</li>
+          <li><b>VWAP:</b> slices weighted by a volume proxy (tick count). It came out nearly identical to TWAP because EUR/USD tick activity was fairly uniform across the windows, so the weights ≈ equal.</li>
+          <li><b>Directional-change strategy:</b> buy a slice each time the ask falls by \(\delta\). Best performer — mean −0.57 pips (paid <em>less</em> than the decision price) and a much lower std (~5.4 pips). The catch is choosing \(\delta\): too small fires everything at once, too large risks not finishing.</li>
+          <li><b>Volatility:</b> TWAP/VWAP cost dispersion stays high in all regimes (rigid schedules don't adapt); the adaptive DC strategy's dispersion grows when volatility is high.</li>
+        </ul></div>
+      <div class="callout good"><span class="ttl">Remember</span> The benchmark is the <b>decision price</b> (implementation shortfall). Rigid schedules (TWAP/VWAP) are predictable and luck-dependent; price-adaptive execution can beat them on average but adds parameter risk.</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> TP06 probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why were TWAP and VWAP almost identical for you?</div><div class="a">VWAP only differs from TWAP through the volume profile. EUR/USD tick activity was roughly uniform across the windows, so the volume weights collapsed to near-equal — making VWAP behave like TWAP.</div></div>
+          <div class="qa"><div class="q">What is the decision price and why benchmark against it?</div><div class="a">The price at the instant you decided to trade (here \(\text{ask}(t_0)\)). The gap between your average fill and that price is implementation shortfall — the true cost of execution, capturing impact + timing.</div></div>
+          <div class="qa follow"><div class="q">Trade-off of the adaptive (DC) strategy?</div><div class="a">It can secure a better average price by waiting for dips, but it's sensitive to the threshold δ and to volatility — there's a risk of not completing the order, i.e. opportunity cost.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- TP07 -->
+    <div class="concept" id="tp07">
+      <h2 class="section-h">TP07 — Optimal portfolio (Markowitz)</h2>
+      <p style="margin-top:2px"><a href="portfolio.html">↗ Theory: Portfolio Construction (MPT)</a></p>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What you did</div>
+        <p>Built the Markowitz efficient frontier for 7 stocks three ways — Monte-Carlo cloud, closed-form analytical solution, and a constrained optimiser — and located the minimum-variance portfolio with and without short-selling.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>The logic</div>
+        <ul>
+          <li><b>Metrics:</b> \(\mu_p=w^\top\mu,\ \sigma_p=\sqrt{w^\top C w}\). 100k random weight vectors trace a bullet/parabola cloud in risk-return space.</li>
+          <li><b>Analytical frontier:</b> the closed-form Lagrange solution \(w^*=C^{-1}(\lambda_1\mathbf1+\lambda_2\mu)\) hugs the left edge of the cloud. Only the upper half (above the min-variance point) is <em>efficient</em>.</li>
+          <li><b>Minimum-variance portfolio:</b> \(w_{\text{gmv}}=C^{-1}\mathbf1/(\mathbf1^\top C^{-1}\mathbf1)\) — pure risk minimisation, so it can carry a slightly negative return and concentrate in the lowest-variance names.</li>
+          <li><b>No-short constraint:</b> a convex quadratic program. Here the constrained and unconstrained frontiers were almost identical because the unconstrained optimum already had non-negative weights — the constraint was <b>non-binding</b> (dataset-specific, not a general rule).</li>
+        </ul></div>
+      <div class="callout good"><span class="ttl">Remember</span> Three routes to the same frontier: Monte Carlo (brute force), closed-form (exact, allows shorts), constrained optimiser (realistic). A constraint only changes the answer if it actually <em>binds</em>.</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> TP07 probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why does the Monte-Carlo cloud have a parabola/bullet shape?</div><div class="a">Portfolio variance is quadratic in the weights, so the achievable set is bounded by a hyperbola in (σ, return) space; the left boundary is the efficient frontier.</div></div>
+          <div class="qa"><div class="q">What is the minimum-variance portfolio and why can its return be negative?</div><div class="a">The leftmost frontier point — it minimises risk regardless of return, so if low-variance assets happen to have poor returns, the GMV return can be small or negative.</div></div>
+          <div class="qa follow"><div class="q">When does a no-short-selling constraint matter?</div><div class="a">Only when the unconstrained optimum wants negative weights. If the optimal weights are already non-negative (as in your data), the constraint is non-binding and the frontier is unchanged.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- TP08 -->
+    <div class="concept" id="tp08">
+      <h2 class="section-h">TP08 — The Minority Game</h2>
+      <p style="margin-top:2px"><a href="abm.html">↗ Theory: Agent-Based Models</a></p>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What you did</div>
+        <p>Implemented the Minority Game with softmax strategy selection and studied how the scaled volatility of attendance, \(\sigma^2/N\), depends on the control parameter \(\alpha=2^M/N\), locating the critical point.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>The logic</div>
+        <ul>
+          <li><b>Why "minority":</b> attendance \(A(t)=\sum_i a_i(t)\); if \(A\gt0\) then \(+1\) is the majority, so the \(-1\) <em>minority</em> wins. The payoff rule rewards being on the smaller side.</li>
+          <li><b>Rationality \(\Gamma\):</b> agents pick strategies by softmax over accumulated utilities; large \(\Gamma\) → greedy (always the best-scoring strategy), small \(\Gamma\) → near-random.</li>
+          <li><b>Phase behaviour:</b> small \(\alpha\) (many agents vs few strategies) → herding and high variance (worse than random); large \(\alpha\) → effectively random, variance → 1; there's a minimum near the critical \(\alpha_c\) (theory ≈ 0.34 for \(S=2\)).</li>
+          <li>You honestly noted your measured \(\alpha_c\) deviated from theory due to slow learning settings (small \(\Gamma\), short runs) — a convergence issue, not a conceptual one.</li>
+        </ul></div>
+      <div class="callout good"><span class="ttl">Remember</span> The σ²/N-vs-α curve has a minimum at the critical point: below it the crowd herds (inefficient, worse than random), above it agents behave randomly. It's a genuine phase transition.</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> TP08 probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why is it called the minority game and how does it map to markets?</div><div class="a">The minority side wins each round — like a crowded trade: if everyone buys, there's no one left to buy from, so the majority loses. It models why being with the crowd is self-defeating.</div></div>
+          <div class="qa"><div class="q">What does the control parameter α capture?</div><div class="a">α = 2ᴹ/N, the ratio of strategy-space size to number of agents. Small α → strategy overlap and herding; large α → diverse, near-random behaviour. The transition is at α_c ≈ 0.34 (S=2).</div></div>
+          <div class="qa follow"><div class="q">Your α_c didn't match theory — why?</div><div class="a">A convergence artifact: with a small rationality Γ and short simulations, agents barely learn, so the herding regime is under-developed. The qualitative minimum is still there; the exact location needs longer runs.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- TP09 -->
+    <div class="concept" id="tp09">
+      <h2 class="section-h">TP09 — Option pricing: Black–Scholes vs Binomial tree</h2>
+      <p style="margin-top:2px"><a href="options-basics.html">↗ Theory: Options — Basics</a></p>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What you did</div>
+        <p>Priced a European call with Black–Scholes (\(S_0=100,K=120,T=1,\sigma=20\%,r=5\%\)), built a Cox-Ross-Rubinstein binomial tree, studied its convergence, then back-solved implied volatility from tree prices by bisection.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>The logic</div>
+        <ul>
+          <li><b>Benchmark:</b> BS gives \(C\approx3.25\); the option is out-of-the-money (\(K\gt S_0\)) so most value is time value.</li>
+          <li><b>Binomial (CRR):</b> \(u=e^{\sigma\sqrt{\Delta t}},\ d=1/u\), risk-neutral \(p\), priced by backward induction. It <b>converges to BS</b> as \(N\to\infty\) — but the convergence <b>oscillates</b> (a known CRR feature), so you need \(N\approx200\text{–}500\) for a stable error.</li>
+          <li><b>Implied vol by bisection:</b> BS price is strictly increasing in \(\sigma\) (Vega &gt; 0), so bisection is guaranteed to converge to the σ that reproduces a given price.</li>
+          <li><b>"Smile" was a numerical artifact:</b> the tree prices were generated with a flat \(\sigma=0.20\), so any curvature in implied-vol-vs-strike is pure discretisation error (a skew at low \(N\)), flattening to 0.20 as \(N\) grows — <em>not</em> an economic smile.</li>
+        </ul></div>
+      <div class="callout good"><span class="ttl">Remember</span> The binomial tree → Black–Scholes in the limit (it discretises the same geometric Brownian motion). A flat-vol model can <em>still</em> produce a fake smile from numerical error — don't confuse that with the real, market-driven smile (fat tails).</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> TP09 probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why does the binomial tree converge to Black–Scholes?</div><div class="a">As steps increase, the CRR up/down process approximates geometric Brownian motion in continuous time, and the discounted risk-neutral expectation converges to the BS formula. Convergence is non-monotone (oscillates), so use a large N.</div></div>
+          <div class="qa"><div class="q">Why is bisection guaranteed to find the implied volatility?</div><div class="a">Because the BS price is a strictly increasing (monotonic) function of σ — Vega is positive — so the price-minus-target function changes sign exactly once and bisection brackets it.</div></div>
+          <div class="qa follow"><div class="q">You got a smile from a flat-vol model — explain.</div><div class="a">It's a discretisation artifact of the coarse tree, not economics. Since the prices came from a single σ=0.20, the true implied-vol curve is flat; the apparent skew vanishes as N→∞. A real market smile instead reflects fat tails / stochastic volatility.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- TP10 -->
+    <div class="concept" id="tp10">
+      <h2 class="section-h">TP10 — The Greeks</h2>
+      <p style="margin-top:2px"><a href="greeks.html">↗ Theory: Options — The Greeks</a></p>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What you did</div>
+        <p>Plotted price, Delta and Gamma for both calls and puts as functions of the spot \(S_0\) (60–200), with \(K=120,\sigma=20\%,r=5\%,T=1\).</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>The logic</div>
+        <ul>
+          <li><b>Price:</b> call value rises with \(S_0\) (the right to buy gets more valuable), put value falls.</li>
+          <li><b>Delta:</b> call Delta \(=N(d_1)\) runs 0→1; put Delta \(=N(d_1)-1\) runs −1→0 — the put curve is the call curve shifted down by 1 (put–call parity).</li>
+          <li><b>Gamma:</b> identical for a call and a put at the same strike, always positive, and <b>peaks at the money</b> — that's where Delta changes fastest and hedging is hardest.</li>
+        </ul></div>
+      <div class="callout good"><span class="ttl">Remember</span> Call and put share the <em>same</em> Gamma (differentiate put–call parity twice — the linear \(S\) and discounted-\(K\) terms vanish). Delta is the hedge ratio; Gamma is why a delta hedge must be rebalanced.</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> TP10 probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why do a call and a put on the same underlying have the same Gamma?</div><div class="a">From put–call parity \(c-p=S-Ke^{-rT}\): differentiate twice w.r.t. \(S\). The right side is linear in \(S\), so its second derivative is 0 ⇒ \(\Gamma_c=\Gamma_p\). (Their Deltas differ by exactly 1, for the same reason.)</div></div>
+          <div class="qa"><div class="q">Where is Gamma largest and why does it matter?</div><div class="a">At the money, increasing as expiry nears. That's where Delta is most sensitive to price, so a delta hedge needs the most frequent rebalancing — the writer is "short gamma".</div></div>
+          <div class="qa follow"><div class="q">What's the range of Delta and what does it represent?</div><div class="a">Call Delta ∈ (0,1), put Delta ∈ (−1,0). It's the hedge ratio (shares per option) and approximately the risk-neutral probability of finishing in the money.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">Big-picture story tying the TPs together</span> The practicals walked the whole syllabus: measure returns/risk (TP01–02), model time series and mean reversion (TP02–03), smooth data and re-clock it (TP04), build a market from orders and agents (TP05, TP08), trade into it well (TP06), allocate optimally (TP07), and price & hedge derivatives (TP09–10). Recurring themes an examiner loves: <b>stationarity, fat tails, no-arbitrage, the smoothing-vs-lag and impact-vs-timing trade-offs, and "the model failing is itself the finding".</b></div>
+
+    <div class="revise-bar"><button class="btn primary" id="revise-btn" data-id="tps"><span class="lbl">Mark this topic as revised</span></button><span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span></div>
+    <div class="page-nav" id="page-nav"></div>
+  </div></main>
+</div>
+<button id="to-top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+</body>
+</html>

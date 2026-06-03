@@ -33,6 +33,9 @@
       { id: "esg",           file: "esg.html",            n: 14, ic: "♺",  t: "ESG / Sustainable Investing",    d: "Scoring, SDGs, carbon footprint, ESG strategies." },
       { id: "altdata",       file: "altdata.html",        n: 15, ic: "◇",  t: "Alternative Data",               d: "Satellite, social, transactions; the data process." },
     ]},
+    { g: "Practical Work", items: [
+      { id: "tps",           file: "tps.html",            n: "TP", ic: "🧪", t: "Practical Work (TPs)",          d: "The logic & exam takeaways of your 10 submitted TPs — no code." },
+    ]},
   ];
 
   const FLAT = TOPICS.flatMap(g => g.items);
