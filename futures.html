@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futures & Forwards — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar">
+  <button class="icon-btn" id="menu-btn" aria-label="Menu"><span class="menu-ic"></span></button>
+  <strong style="font-size:15px">Futures & Forwards</strong>
+  <button class="icon-btn" data-theme-toggle aria-label="Toggle theme" style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 13 · Derivatives</div>
+    <h1 class="page-title">Futures & Forwards</h1>
+    <p class="page-lede">Contracts to trade at a fixed price on a future date. Unlike options, there's no choice — you're obligated. Their fair price comes from a simple replication argument.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#what">What they are</a></li>
+      <li><a href="#vs">Forwards vs futures</a></li>
+      <li><a href="#margin">Margins & daily settlement</a></li>
+      <li><a href="#price">Pricing (cost of carry)</a></li>
+      <li><a href="#val">Valuing an existing contract</a></li>
+      <li><a href="#cb">Contango & backwardation</a></li>
+    </ul></div>
+
+    <div class="concept" id="what">
+      <h2 class="section-h">What they are</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>A futures (or forward) contract is a binding agreement between two parties to buy/sell an asset at a set price \(K\) on a set future date \(T\). Both sides are <b>obligated</b> — it's not a right.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Futures let farmers lock in a selling price, airlines lock in fuel costs, and investors get exposure to commodities or indices <em>without holding the physical asset</em>. They're a primary hedging and speculation tool, and their pricing is the cleanest example of replication.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Traded on assets like commodities (metals, grain, energy), equities, currencies and bonds. To stay exposed without taking delivery you "<b>roll over</b>" — close the near contract and open the next. Created originally by/for farmers wanting price certainty on a future harvest.</p></div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>A forward is <b>pre-ordering a product at today's quoted price for delivery next month</b> — but unlike a pre-order you can cancel, here <em>both</em> you and the seller are locked in, win or lose.</p></div>
+    </div>
+
+    <div class="concept" id="vs">
+      <h2 class="section-h">Forwards vs futures</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Forwards</th><th>Futures</th></tr></thead>
+          <tbody>
+            <tr><td>Traded OTC (private)</td><td>Traded on exchanges (e.g. CME)</td></tr>
+            <tr><td>Customisable / not standardised</td><td>Standardised contracts</td></tr>
+            <tr><td>Specific delivery date</td><td>Range of delivery dates</td></tr>
+            <tr><td>Settled once, at the end</td><td>Settled <b>daily</b> (marked to market)</td></tr>
+            <tr><td>Often physical delivery</td><td>Usually closed out before maturity</td></tr>
+          </tbody>
+        </table></div>
+        <p>The big practical difference: futures are exchange-guaranteed and settled daily via margins, removing most counterparty (default) risk; forwards carry that risk privately.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>A forward is a <b>handshake deal</b> with a neighbour; a future is the same deal <b>run through an escrow agent</b> (the exchange) who checks both wallets every day so neither can walk away.</p></div>
+    </div>
+
+    <div class="concept" id="margin">
+      <h2 class="section-h">Margins & daily settlement</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The system the exchange uses to guarantee performance: each side posts collateral (margin), and gains/losses are settled in cash <em>every day</em>.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It's what makes futures safe to trade with strangers — it removes the risk that the loser simply doesn't pay. Understanding margin calls is essential to understanding why futures rarely default.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Initial margin:</b> collateral posted up front.</li>
+          <li><b>Maintenance margin:</b> a floor; if your balance drops below it, you get a <b>margin call</b> to top back up to the initial level.</li>
+          <li>Excess above the initial margin can be withdrawn.</li>
+        </ul>
+      </div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Buy 2 gold futures (100 oz each) at $400. Initial margin $2000/contract ($4000 total), maintenance $1500/contract ($3000 total). Day 1 price → $397: loss \(2\times100\times3=\$600\), balance $3400. After a slide to $393.30, cumulative loss \(-\$1340\), balance $2660 &lt; $3000 → <b>margin call</b> for $1340 to restore $4000.</p></div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Margin is a <b>poker buy-in that's topped up each hand</b>: the house makes you keep enough chips on the table so you can always cover today's losses, settling up nightly instead of at the end.</p></div>
+    </div>
+
+    <div class="concept" id="price">
+      <h2 class="section-h">Pricing — cost of carry</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The fair futures price is simply today's spot price grown at the risk-free rate to the delivery date — the cost of "carrying" the asset until then.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It's the purest no-arbitrage / replication result in the course: the price is fixed by the cost to <em>build</em> the position, with no probabilities or forecasts involved.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ F_t = S_t\,e^{r(T-t)} \]</div>
+        <ul class="legend"><li><span class="sym">S_t</span> spot now · <span class="sym">r</span> risk-free rate · <span class="sym">T−t</span> time to delivery. To provide the asset at \(T\), borrow \(S_t\) now, buy the asset, repay \(S_t e^{r(T-t)}\) at \(T\) — that's the cost, hence the price.</li></ul>
+        <details class="acc"><summary><span class="tag derive">Arbitrage proof</span> Why \(F_t=S_te^{r(T-t)}\)</summary>
+          <div class="acc-body">
+            <p>If \(F_t' &gt; S_te^{r(T-t)}\): borrow cash, buy the asset spot, <em>short</em> the future. At delivery hand over the asset for \(F_t'\), repay \(S_te^{r(T-t)}\), pocket \(F_t'-S_te^{r(T-t)}&gt;0\) risk-free.</p>
+            <p>If \(F_t'' &lt; S_te^{r(T-t)}\): buy the future, short-sell the asset, invest the proceeds at \(r\). At delivery take delivery for \(F_t''\), having grown the cash to \(S_te^{r(T-t)}\), pocket \(S_te^{r(T-t)}-F_t''&gt;0\).</p>
+            <p>Both free lunches vanish only at \(F_t=S_te^{r(T-t)}\). \(\;\square\)</p>
+          </div>
+        </details>
+        <p>Adjust for cash flows on the asset:</p>
+        <div class="formula tight">\[ \text{income/dividend } I:\quad F_t=(S_t-I)e^{r(T-t)} \qquad\quad \text{yield/cost } q:\quad F_t=S_t e^{(r-q)(T-t)} \]</div>
+        <p class="legend">An income \(I\) (e.g. dividends, coupons) lowers the futures price; a storage cost \(q\) raises it; a convenience yield lowers it.</p>
+      </div>
+      <div class="chart-card">
+        <div class="chart-controls">
+          <div class="ctrl"><label>Risk-free rate r <span class="val" id="f-rv">6%</span></label><input id="f-r" type="range" min="0" max="12" value="6" step="0.5"></div>
+          <div class="ctrl"><label>Carry/yield q <span class="val" id="f-qv">0%</span></label><input id="f-q" type="range" min="-6" max="10" value="0" step="0.5"></div>
+        </div>
+        <div id="ch-fut" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> futures price vs time to delivery for spot \(S=100\). With net carry \(r-q&gt;0\) the curve rises (<b>contango</b>); make \(q&gt;r\) and it falls (<b>backwardation</b>). In all cases it converges to spot as \(T\to t\).</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>The futures price is "<b>what it costs to keep the asset in storage until handover</b>" — finance cost (interest) pushes it up, any income it throws off (dividends) or a storage bill (commodities) adjusts it.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example (Hull 3.5)</div>
+        <p>4-month forward on a zero-coupon bond, spot $930, \(r=6\%\). No income, so \(F_0=930\,e^{0.06\cdot4/12}=\mathbf{\$948.79}\) — the delivery price for a contract negotiated today.</p></div>
+    </div>
+
+    <div class="concept" id="val">
+      <h2 class="section-h">Valuing an existing contract</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>At inception \(K=F_0\) and the contract is worth \(f=0\). Later, as \(F_t\) moves, its value to the long is the discounted difference between the current futures price and the locked-in delivery price:</p>
+        <div class="formula">\[ f_t=(F_t-K)\,e^{-r(T-t)} \;=\; S_t - K e^{-r(T-t)} \quad(\text{no income}) \]</div>
+        <p class="legend">So holding a future is <em>partly</em> like holding the underlying (\(S_t\) appears directly), plus a rate-dependent term. \(F_t\) itself is set by supply/demand around the carry relationship.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Your locked price \(K\) is a coupon. If the market's going rate \(F_t\) drifts above \(K\), your coupon is now valuable; discount that advantage back to today and you have the contract's value.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>You're long at \(K=948.79\). A month later the futures trades \(F_t=955\), \(r=6\%\), \(T-t=3/12\): \(f=(955-948.79)e^{-0.06\cdot0.25}=6.21\times0.985=\mathbf{\$6.12}\) of value to you.</p></div>
+    </div>
+
+    <div class="concept" id="cb">
+      <h2 class="section-h">Contango & backwardation</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>Two shapes the futures curve can take: <b>contango</b> = futures above spot (upward-sloping); <b>backwardation</b> = futures below spot (downward-sloping).</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>The shape reflects market expectations and storage/demand. It also drives the cost of rolling — in contango, rolling forward repeatedly bleeds money, which matters hugely for commodity ETFs.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Contango:</b> high carry/interest, prices expected to rise → \(F&gt;S\).</li>
+          <li><b>Backwardation:</b> high demand for the asset now, prices expected to fall → \(F&lt;S\).</li>
+          <li>Either way, by convergence \(F_T\to S_T\) at maturity — the contract must settle at spot.</li>
+        </ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Contango is "<b>future concert tickets cost more than today's</b>" (storage/financing premium); backwardation is "<b>everyone wants the asset right now</b>" so spot is bid up above the future.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Futures probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">How does futures pricing differ from option pricing?</div><div class="a">No probabilities, no volatility — pure cost-of-carry replication: \(F=Se^{r(T-t)}\). Options need a model of the price distribution (binomial/Black–Scholes) because the payoff is nonlinear; a future's payoff is linear, so no-arbitrage alone fixes the price.</div></div>
+          <div class="qa"><div class="q">Why does daily settlement matter?</div><div class="a">It limits credit risk: losses are collected daily, so a defaulter can only ever owe one day's move, backed by margin. It's the structural reason futures rarely default versus forwards.</div></div>
+          <div class="qa"><div class="q">What happens to \(F\) as maturity approaches?</div><div class="a">It converges to the spot price \(S_T\) — the carry term \(e^{r(T-t)}\to1\). Contango and backwardation both collapse to spot at delivery.</div></div>
+          <div class="qa follow"><div class="q">Why is a future "partly being exposed to the underlying"?</div><div class="a">Because its value \(f_t=S_t-Ke^{-r(T-t)}\) moves one-for-one with \(S_t\). You also pick up sensitivity to \(r\), but the dominant driver is the spot.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "A future is an <em>obligation</em> to trade at a fixed price later. Its fair price is pure cost-of-carry, \(F=Se^{r(T-t)}\), forced by no-arbitrage replication — no probabilities needed. Exchanges remove default risk via daily margining, and the curve sits in contango or backwardation but always converges to spot at delivery."</div>
+
+    <div class="revise-bar">
+      <button class="btn primary" id="revise-btn" data-id="futures"><span class="lbl">Mark this topic as revised</span></button>
+      <span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span>
+    </div>
+    <div class="page-nav" id="page-nav"></div>
+
+  </div></main>
+</div>
+<button id="to-top" aria-label="Back to top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+function draw(){
+  const C=CF.colors();
+  const r=(+document.getElementById('f-r').value)/100, q=(+document.getElementById('f-q').value)/100, S=100;
+  document.getElementById('f-rv').textContent=(r*100).toFixed(1)+'%';
+  document.getElementById('f-qv').textContent=(q*100).toFixed(1)+'%';
+  const T=[],F=[];for(let t=0;t<=2;t+=0.05){T.push(t);F.push(S*Math.exp((r-q)*t));}
+  Plotly.react('ch-fut',[
+    {x:T,y:F,name:'Futures price F',line:{color:C.accent,width:3.5}},
+    {x:T,y:T.map(()=>S),name:'Spot S = 100',line:{color:C.mute,width:2,dash:'dash'}}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'Time to delivery (years)',gridcolor:C.grid,autorange:'reversed'},yaxis:{title:'Price',gridcolor:C.grid}}),CF.config);
+}
+['f-r','f-q'].forEach(id=>document.getElementById(id).addEventListener('input',draw));
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

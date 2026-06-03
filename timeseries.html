@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time Series & AR Models — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar"><button class="icon-btn" id="menu-btn"><span class="menu-ic"></span></button><strong style="font-size:15px">Time Series & AR Models</strong><button class="icon-btn" data-theme-toggle style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button></div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 2 · Foundations</div>
+    <h1 class="page-title">Time Series & Autoregressive Models</h1>
+    <p class="page-lede">How we describe a quantity that evolves in time, why we must make it "stationary" first, and how the simplest model — AR(1) — captures whether a series trends or reverts.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#ts">What a time series is</a></li>
+      <li><a href="#stat">Stationarity</a></li>
+      <li><a href="#acf">Autocorrelation (ACF)</a></li>
+      <li><a href="#ar">Autoregressive models</a></li>
+      <li><a href="#ar1">AR(1) results</a></li>
+    </ul></div>
+
+    <div class="concept" id="ts">
+      <h2 class="section-h">What a time series is</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>A sequence of observations of one quantity recorded over time — \(X(t_1),X(t_2),\dots\) — where the <em>order</em> matters.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>Prices, returns, rates, GDP — almost all financial data is a time series. To forecast or explain it we need models that respect that today depends on yesterday. The "lag" \(\tau\) (gap between observations) is the basic unit.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div><p>We summarise a series with its mean \(\mathbb E[X]\) and variance/volatility \(\mathrm{Var}[X]\), then go further by asking how it depends on its own past. Unlike information theory, you can't reshuffle the observations — order is information.</p></div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>A time series is a <b>diary, not a bag of words</b>. Reading the entries in order tells a story (Monday's mood affects Tuesday's); shuffling them destroys the meaning.</p></div>
+    </div>
+
+    <div class="concept" id="stat">
+      <h2 class="section-h">Stationarity</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>A series is stationary if its statistical character (mean, variance, how it correlates with its past) doesn't drift over time.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>Models assume the rules stay fixed. Fit a model to a drifting (non-stationary) series and you get spurious relationships and unreliable parameters. Raw <em>prices</em> are non-stationary (they trend); <em>returns</em> usually are stationary — which is why we model returns, not prices.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p><b>Strict stationarity:</b> the entire joint distribution is shift-invariant: \(F(X_{t_1+\tau},\dots)=F(X_{t_1},\dots)\) for all \(\tau\). Too strong in practice, so we use <b>weak stationarity</b>:</p>
+        <ul class="legend"><li>(a) constant mean: \(E[X_t]=\mu\) for all \(t\);</li><li>(b) autocovariance depends only on the lag: \(\mathrm{Cov}(X_t,X_{t+\tau})=\gamma(\tau)\).</li></ul>
+        <p>Threats: <b>trend</b>, <b>seasonality</b>, <b>heteroskedasticity</b> (changing volatility — the "H" in GARCH). Fixes: difference the series, take returns, remove trend/seasonality, take logs. Test with the Augmented Dickey-Fuller (ADF) test or just eyeball it.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Stationary = a <b>fair die that stays the same die</b> every roll. If someone keeps secretly reweighting the die (trend) or swapping it at noon (seasonality), any statistics you gather are meaningless.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div><p>EUR/USD <em>price</em> wanders with no fixed mean → non-stationary (ADF p &gt; 0.05). Take daily <em>returns</em> → roughly constant mean ≈ 0 and stable variance → weakly stationary, ready to model.</p></div>
+    </div>
+
+    <div class="concept" id="acf">
+      <h2 class="section-h">Autocorrelation (ACF)</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>The correlation of a series with a lagged copy of itself — how much today's value tells you about the value \(\tau\) steps later.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>The ACF is the X-ray of a time series: it reveals hidden structure (trends, cycles, mean-reversion) invisible in the raw plot, and it's the foundation of autoregressive modelling.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ \rho_\tau=\mathrm{Cor}(X_t,X_{t+\tau})=\frac{E[(X_t-\mu)(X_{t+\tau}-\mu)]}{\sigma^2} \]</div>
+        <p class="legend">(Assuming stationarity, so the mean μ and variance σ² are the same at every \(t\).) Plotting \(\rho_\tau\) against \(\tau\) is the <b>ACF</b>; bars outside the confidence band signal real structure.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>The ACF is an <b>echo test</b>: shout into a canyon and listen. A strong echo at a fixed delay (e.g. every 10 steps) reveals a repeating pattern you couldn't see by just looking at the noise.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div><p>A series \(X_t=\varepsilon_t+\sin(2\pi t/10)\) looks like noise, but its ACF shows a clear spike every 10 lags — exposing the hidden cycle. Positive ACF at lag 1 ⇒ trending; negative ⇒ counter-trending (mean-reverting).</p></div>
+    </div>
+
+    <div class="concept" id="ar">
+      <h2 class="section-h">Autoregressive models</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Model the series as a function of its own past plus noise:</p>
+        <div class="formula">\[ \text{AR}(p):\ X_t=c+\sum_{i=1}^p\varphi_i X_{t-i}+\varepsilon_t,\quad \text{MA}(q):\ X_t=\mu+\varepsilon_t+\sum_{i=1}^q\theta_i\varepsilon_{t-i} \]</div>
+        <p>ARMA(p,q) combines both. AR uses past <em>values</em>; MA uses past <em>shocks</em>. Choosing \(p,q\) (and comparing models) uses criteria like <b>AIC</b> \(=2p-2\ln L\) and <b>BIC</b> \(=p\ln n-2\ln L\) — both reward fit (\(\ln L\)) and penalise complexity (\(p\)).</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>An AR model is "<b>tomorrow looks like a fraction of today, plus a surprise</b>". The coefficient \(\varphi\) is how much memory the series has; \(\varepsilon\) is the daily surprise.</p></div>
+    </div>
+
+    <div class="concept" id="ar1">
+      <h2 class="section-h">AR(1) — the analytic case</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>With \(p=1\): \(X_t=c+\varphi_1 X_{t-1}+\varepsilon_t\), noise \(\varepsilon_t\sim N(0,\sigma_\varepsilon^2)\). Stationarity lets us solve everything in closed form:</p>
+        <div class="formula">\[ \mu=\frac{c}{1-\varphi_1},\qquad \mathrm{Var}(X_t)=\frac{\sigma_\varepsilon^2}{1-\varphi_1^2}\ (\Rightarrow |\varphi_1|&lt;1),\qquad \varphi_1=\rho_1 \]</div>
+        <details class="acc"><summary><span class="tag derive">Derivation</span> Mean, variance and \(\varphi_1=\rho_1\)</summary>
+          <div class="acc-body">
+            <p><b>Mean:</b> take expectations: \(E[X_t]=c+\varphi_1E[X_{t-1}]\). Stationarity ⇒ \(E[X_t]=E[X_{t-1}]=\mu\), so \(\mu=c+\varphi_1\mu\Rightarrow\mu=\frac{c}{1-\varphi_1}\). Normalise \(c=0\Rightarrow\mu=0\).</p>
+            <p><b>Variance:</b> \(\mathrm{Var}(X_t)=\varphi_1^2\mathrm{Var}(X_{t-1})+\sigma_\varepsilon^2\) (noise independent). Stationarity ⇒ \(V=\varphi_1^2V+\sigma_\varepsilon^2\Rightarrow V=\frac{\sigma_\varepsilon^2}{1-\varphi_1^2}\). Positive variance forces \(\varphi_1^2&lt;1\).</p>
+            <p><b>Lag-1 autocov:</b> \(\gamma_1=E[X_tX_{t+1}]=E[X_t(\varphi_1X_t+\varepsilon_{t+1})]=\varphi_1\mathrm{Var}(X_t)\). Divide by the variance: the lag-1 autocorrelation \(\rho_1=\varphi_1\). So the single parameter <em>is</em> the lag-1 autocorrelation. \(\;\square\)</p>
+          </div>
+        </details>
+        <p>Interpretation: \(\varphi_1&gt;0\) ⇒ trending (momentum); \(\varphi_1&lt;0\) ⇒ counter-trending (mean-reversion); \(\varphi_1=1\) ⇒ a random walk (non-stationary, perfect fit in-sample). Higher orders have no closed form — estimate by maximum likelihood.</p>
+      </div>
+      <div class="chart-card">
+        <div class="chart-controls">
+          <div class="ctrl"><label>AR(1) coefficient φ₁ <span class="val" id="ar-pv">0.70</span></label><input id="ar-p" type="range" min="-0.95" max="1" value="0.7" step="0.05"></div>
+        </div>
+        <div id="ch-ar" class="chart"></div>
+        <div id="ch-acf" class="chart" style="height:240px"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> top — an AR(1) path; bottom — its ACF. φ₁ near +1 = smooth trending wander (slowly-decaying ACF, a near random-walk at φ₁=1); φ₁ near 0 = pure noise (no autocorrelation); φ₁ &lt; 0 = jagged mean-reversion (alternating-sign ACF).</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>φ₁ is a <b>memory dial</b>. At 1, the series never forgets (drifts forever — random walk). At 0, total amnesia (white noise). Negative, it's contrarian — overshoots then springs back.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Time-series probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why model returns rather than prices?</div><div class="a">Prices are non-stationary (they trend, no fixed mean/variance), which breaks model assumptions and produces spurious results. Returns are (approximately) stationary, so estimation is reliable.</div></div>
+          <div class="qa"><div class="q">What does the AR(1) coefficient tell you?</div><div class="a">It equals the lag-1 autocorrelation. Positive ⇒ momentum/trending; negative ⇒ mean-reversion; magnitude near 1 ⇒ long memory; =1 ⇒ random walk (unit root, non-stationary).</div></div>
+          <div class="qa"><div class="q">Why must \(|\varphi_1|&lt;1\)?</div><div class="a">Otherwise the variance \(\sigma_\varepsilon^2/(1-\varphi_1^2)\) is non-positive/infinite — the series isn't stationary; shocks accumulate without bound.</div></div>
+          <div class="qa follow"><div class="q">AIC vs BIC?</div><div class="a">Both trade fit against complexity; BIC's penalty (\(p\ln n\)) is harsher for large samples, so it favours simpler models. Use them to pick \(p,q\) without overfitting.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "A time series is ordered data; we make it <b>stationary</b> (usually by taking returns) so its statistics are stable, read its structure from the <b>autocorrelation function</b>, and model it autoregressively. In AR(1) the single coefficient <em>is</em> the lag-1 autocorrelation — positive means trending, negative means reverting, one means a random walk."</div>
+
+    <div class="revise-bar"><button class="btn primary" id="revise-btn" data-id="timeseries"><span class="lbl">Mark this topic as revised</span></button><span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span></div>
+    <div class="page-nav" id="page-nav"></div>
+  </div></main>
+</div>
+<button id="to-top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+let seed=987654;function rnd(){seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;}
+function gauss(){return Math.sqrt(-2*Math.log(rnd()+1e-12))*Math.cos(6.283185*rnd());}
+function draw(){
+  const C=CF.colors();
+  const phi=+document.getElementById('ar-p').value;
+  document.getElementById('ar-pv').textContent=phi.toFixed(2);
+  seed=987654; const n=200,x=[0],t=[0];
+  for(let i=1;i<n;i++){x.push(phi*x[i-1]+gauss());t.push(i);}
+  Plotly.react('ch-ar',[{x:t,y:x,mode:'lines',name:'AR(1) path',line:{color:C.accent,width:1.8}}],
+    CF.layout({margin:{l:48,r:18,t:10,b:34},showlegend:false,xaxis:{title:'time t',gridcolor:C.grid},yaxis:{title:'Xₜ',gridcolor:C.grid}}),CF.config);
+  // theoretical ACF rho_tau = phi^tau
+  const lags=[],acf=[];for(let k=0;k<=20;k++){lags.push(k);acf.push(Math.pow(phi,k));}
+  Plotly.react('ch-acf',[{x:lags,y:acf,type:'bar',name:'ACF',marker:{color:C.how}}],
+    CF.layout({margin:{l:48,r:18,t:10,b:34},showlegend:false,xaxis:{title:'lag τ',gridcolor:C.grid},yaxis:{title:'ρ_τ = φ₁^τ',gridcolor:C.grid,range:[-1,1.05],zeroline:true,zerolinecolor:C.mute}}),CF.config);
+}
+document.getElementById('ar-p').addEventListener('input',draw);
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

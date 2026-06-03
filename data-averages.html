@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data, Moving Averages & Intrinsic Time — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar"><button class="icon-btn" id="menu-btn"><span class="menu-ic"></span></button><strong style="font-size:15px">Data & Moving Averages</strong><button class="icon-btn" data-theme-toggle style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button></div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 4 · Markets & Microstructure</div>
+    <h1 class="page-title">Data, Moving Averages & Intrinsic Time</h1>
+    <p class="page-lede">Real market data is messy and irregular. Three ways to smooth it — SMA, WMA, EMA — and a radical idea: let the market, not the clock, define time.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#real">Data in real life</a></li>
+      <li><a href="#sma">Simple Moving Average</a></li>
+      <li><a href="#wma">Weighted Moving Average</a></li>
+      <li><a href="#ema">Exponential Moving Average</a></li>
+      <li><a href="#intrinsic">Intrinsic time</a></li>
+    </ul></div>
+
+    <div class="concept" id="real">
+      <h2 class="section-h">Data in real life</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>We <em>imagine</em> price data as smooth, continuous and equally spaced. In reality it's a noisy stream of bid/ask quotes arriving at irregular times.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>Every model assumes clean inputs. Knowing data is actually non-equidistant, noisy and sometimes discontinuous tells you why we smooth (moving averages) and why naïve discretisation loses information.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div><p>Two handling choices: <b>discretise</b> (sample at fixed intervals — used 99.9% of the time, but misses what happens between ticks) or <b>interpolate</b> (rare; strong assumptions). Either way, physical time feels arbitrary and rigid — a theme revisited by intrinsic time.</p></div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Expecting a smooth line but getting jagged ticks is like <b>expecting a polished song and hearing the raw, crackly studio recording</b> — full of gaps and noise you must clean up.</p></div>
+    </div>
+
+    <div class="concept" id="sma">
+      <h2 class="section-h">Simple Moving Average (SMA)</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>The plain average of the last \(n\) observations — slide the window forward each step.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>It's the simplest noise filter, the baseline every trader knows. Its flaws (equal weighting, lag) motivate the better averages.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ \text{SMA}(t)=\frac{X_{t-n+1}+\dots+X_t}{n},\qquad \text{SMA}(t{+}1)=\text{SMA}(t)-\frac{X_{t-n+1}}{n}+\frac{X_{t+1}}{n} \]</div>
+        <p class="legend">The update drops the oldest point and adds the newest — but you must keep all \(n\) points in memory. <b>Two flaws:</b> old data counts as much as new; and there's an inherent <b>time lag</b> (bigger \(n\) ⇒ smoother but laggier).</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Like judging today's mood by the <b>plain average of the last 10 days</b> — a heatwave that ended a week ago still drags the average up as much as today's weather.</p></div>
+    </div>
+
+    <div class="concept" id="wma">
+      <h2 class="section-h">Weighted Moving Average (WMA)</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Weight recent points more — linearly, newest gets weight \(n\), oldest gets 1:</p>
+        <div class="formula">\[ \text{WMA}(t)=\frac{1\cdot X_{t-n+1}+2\cdot X_{t-n+2}+\dots+n\cdot X_t}{n+(n-1)+\dots+1},\qquad \sum_{k=1}^n k=\frac{n(n+1)}{2} \]</div>
+        <p class="legend">It fixes the "old = new" flaw, but the update is cumbersome (you must recompute a running total). The newest point's weight is \(\frac{2}{n+1}\) of the total.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>A teacher who <b>weights recent test scores more than early ones</b> — fairer to your current ability, but more bookkeeping to compute.</p></div>
+    </div>
+
+    <div class="concept" id="ema">
+      <h2 class="section-h">Exponential Moving Average (EMA)</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>An average whose weights decay <em>exponentially</em> into the past — and which updates with a single, elegant recursion.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>It's the practitioner's favourite: smooth, recent-weighted, and needs only the previous value to update — no window to store. It's everywhere (MACD, vol estimates, RSI).</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ \text{EMA}(t)=\alpha\,X_t+(1-\alpha)\,\text{EMA}(t-1) \]</div>
+        <details class="acc"><summary><span class="tag derive">Derivation</span> From the infinite weighted sum to the recursion</summary>
+          <div class="acc-body">
+            <p>Start from \(\text{EMA}(t)=\dfrac{X_t+(1-\alpha)X_{t-1}+(1-\alpha)^2X_{t-2}+\dots}{1+(1-\alpha)+(1-\alpha)^2+\dots}\). The denominator is a geometric series summing to \(1/\alpha\). Pull out \(X_t\) and factor \((1-\alpha)\) from the rest — the remaining fraction is exactly \(\text{EMA}(t-1)\):</p>
+            <div class="formula tight">\[ \text{EMA}(t)=\alpha X_t+(1-\alpha)\text{EMA}(t-1).\;\square \]</div>
+            <p>Choosing \(\alpha=\frac{2}{n+1}\) makes an EMA's average "age" equal an \(n\)-window SMA's (≈ comparable smoothing). Or set the impact of a point after \(k\) steps to \(\epsilon\): \(\alpha=1-e^{\ln\epsilon/k}\).</p>
+          </div>
+        </details>
+        <ul class="legend"><li><span class="sym">α</span> the smoothing factor in (0,1): bigger α = more reactive (short lag), smaller α = smoother (long lag).</li></ul>
+      </div>
+      <div class="chart-card">
+        <div class="chart-controls">
+          <div class="ctrl"><label>Window n (SMA/WMA) <span class="val" id="ma-nv">15</span></label><input id="ma-n" type="range" min="2" max="40" value="15" step="1"></div>
+          <div class="ctrl"><label>EMA α <span class="val" id="ma-av">0.12</span></label><input id="ma-a" type="range" min="0.02" max="0.6" value="0.12" step="0.01"></div>
+        </div>
+        <div id="ch-ma" class="chart tall"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> a noisy price (grey) and its three smoothings. All three <b>lag</b> behind turns — bigger window / smaller α = smoother but laggier. The EMA reacts fastest for a given smoothness because it weights recent data most.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>EMA is your <b>opinion of a friend</b>: mostly your view from yesterday, nudged a little by what they did today. Memory fades smoothly — you don't suddenly forget everything 10 days ago like an SMA window does.</p></div>
+      <div class="callout warn"><span class="ttl">Note</span> The unavoidable trade-off: <b>smoother ⇒ laggier</b>. No moving average escapes it. Setting \(\alpha=\frac{2}{n+1}\) makes an EMA <em>comparable</em> to an \(n\)-SMA but they are not identical.</div>
+    </div>
+
+    <div class="concept" id="intrinsic">
+      <h2 class="section-h">Intrinsic time</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>A clock driven by <em>price events</em> rather than the wall clock — time "ticks" only when the price reverses by a chosen amount.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>Physical time is arbitrary (when does a "day" start? markets sleep and surge). Important moves can hide between fixed samples. Letting the market set the rhythm makes time <em>adaptive</em> — fast when volatile, slow when calm — and connects naturally to volatility.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Pick a threshold \(\delta&gt;0\). An event (a <b>directional change</b>) is logged whenever price reverses by \(\delta\) from the last extreme; between events you observe an <b>overshoot</b>. The <em>count</em> of directional changes per unit physical time measures volatility; overshoot length reflects liquidity. A web of empirical <b>scaling laws</b> (e.g. \(\langle\Delta t_{dc}\rangle\sim(\delta/c)^\alpha\)) links intrinsic and physical time.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Like measuring a hike by <b>switchbacks climbed instead of minutes elapsed</b>. On a steep, twisty stretch (volatile market) the "switchback clock" races; on a flat path (calm market) it barely moves — a more natural sense of how much has actually happened.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Averages & intrinsic time</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">SMA vs EMA — when use which?</div><div class="a">SMA is simple and equal-weighted but needs the full window and lags; EMA weights recent data, updates with one previous value (memory-light) and is more responsive for the same smoothness. EMA is usually preferred in practice.</div></div>
+          <div class="qa"><div class="q">Why does every moving average lag?</div><div class="a">Because it's an average of <em>past</em> data; the more you smooth (larger \(n\), smaller \(\alpha\)) the more weight is on older points, so the average trails turning points. Smoothness and lag are inseparable.</div></div>
+          <div class="qa"><div class="q">What problem does intrinsic time solve?</div><div class="a">Physical time is arbitrary and lets events go unnoticed between samples. Intrinsic time samples by price activity, so it's dense when markets are active and connects directly to volatility (count of directional changes).</div></div>
+          <div class="qa follow"><div class="q">Derive the EMA recursion in one line.</div><div class="a">The exponential-weight numerator over the geometric denominator \(1/\alpha\) factors into \(\alpha X_t+(1-\alpha)\text{EMA}(t-1)\) — current point plus a faded copy of the previous average.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "Real data is noisy and irregular, so we smooth it: SMA (equal weights, laggy), WMA (linear weights), and EMA (exponential weights, one-line recursion, memory-light) — all trading smoothness for lag. Intrinsic time goes further, replacing the arbitrary wall clock with a price-event clock that's fast when volatile and slow when calm."</div>
+
+    <div class="revise-bar"><button class="btn primary" id="revise-btn" data-id="data"><span class="lbl">Mark this topic as revised</span></button><span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span></div>
+    <div class="page-nav" id="page-nav"></div>
+  </div></main>
+</div>
+<button id="to-top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+let seed=4242;function rnd(){seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;}
+function gauss(){return Math.sqrt(-2*Math.log(rnd()+1e-12))*Math.cos(6.283185*rnd());}
+const N=160; let price=[];
+(function(){seed=4242;let p=100;for(let i=0;i<N;i++){p+=0.4*Math.sin(i/12)+gauss()*1.4;price.push(p);}})();
+function draw(){
+  const C=CF.colors();
+  const n=+document.getElementById('ma-n').value, a=+document.getElementById('ma-a').value;
+  document.getElementById('ma-nv').textContent=n; document.getElementById('ma-av').textContent=a.toFixed(2);
+  const t=price.map((_,i)=>i);
+  const sma=price.map((_,i)=>{if(i<n-1)return null;let s=0;for(let k=0;k<n;k++)s+=price[i-k];return s/n;});
+  const wma=price.map((_,i)=>{if(i<n-1)return null;let s=0,w=0;for(let k=0;k<n;k++){const wt=n-k;s+=wt*price[i-k];w+=wt;}return s/w;});
+  let ema=[price[0]];for(let i=1;i<N;i++)ema.push(a*price[i]+(1-a)*ema[i-1]);
+  Plotly.react('ch-ma',[
+    {x:t,y:price,name:'Price (noisy)',line:{color:C.mute,width:1.3}},
+    {x:t,y:sma,name:'SMA',line:{color:C.accent,width:2.5}},
+    {x:t,y:wma,name:'WMA',line:{color:C.good,width:2}},
+    {x:t,y:ema,name:'EMA',line:{color:C.bad,width:2.5}}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'time',gridcolor:C.grid},yaxis:{title:'price',gridcolor:C.grid}}),CF.config);
+}
+['ma-n','ma-a'].forEach(id=>document.getElementById(id).addEventListener('input',draw));
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

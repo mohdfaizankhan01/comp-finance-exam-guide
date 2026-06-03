@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computational Finance — Oral Exam Study Guide</title>
+<meta name="description" content="A premium study guide for the Computational Finance oral exam: deep, intuitive explanations of every topic with interactive charts.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;820&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar">
+  <button class="icon-btn" id="menu-btn" aria-label="Menu"><span class="menu-ic"></span></button>
+  <strong style="font-size:15px">Computational Finance</strong>
+  <button class="icon-btn" data-theme-toggle aria-label="Toggle theme" style="margin-left:auto">
+    <span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit">
+      <span class="logo">cf</span>
+      <span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span>
+    </a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle>
+      <span class="theme-ic-moon"></span><span class="theme-ic-sun"></span>
+      <span class="theme-label">Dark mode</span></button>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+
+      <section class="hero">
+        <span class="pill">📘 Based on A. Dupuis — <i>Introduction to Computational Finance</i>, University of Geneva</span>
+        <h1>Understand every topic well enough to <span class="grad">survive the follow-ups.</span></h1>
+        <p>This is not a flashcard deck. Each topic is built so you genuinely <em>understand</em> it — what it is, why it exists, how the maths is derived step by step, a plain-English analogy, a worked example, and the exact questions an examiner is likely to ask (with model answers and traps to avoid).</p>
+      </section>
+
+      <div class="progress-dash">
+        <div class="top">
+          <div>
+            <div class="pct" id="dash-pct">0<span>%</span></div>
+            <div style="color:var(--text-mute);font-size:14px" id="dash-count">0 of 15 topics revised</div>
+          </div>
+          <button class="reset-link" id="reset-progress">Reset progress</button>
+        </div>
+        <div class="bar"><i id="dash-bar" style="width:0%"></i></div>
+        <div style="font-size:13px;color:var(--text-mute);margin-top:8px">Tick “Mark as revised” at the bottom of each page — your progress is saved in this browser.</div>
+      </div>
+
+      <div class="callout info" style="margin-top:26px">
+        <span class="ttl">How the exam works</span>
+        Oral, closed-book, <b>2 broad questions drawn at random</b>. You answer, then the examiner digs deeper with follow-ups. The goal of this site is depth: be able to <em>tell a story</em> about each subject and defend it.
+      </div>
+
+      <h2 class="section-h" style="margin-top:44px">All topics</h2>
+      <p class="page-lede" style="font-size:16px">14 lectures, grouped logically. The quant-heavy pages (Options, Greeks, Bonds, Futures, Portfolio, Returns) include interactive charts you can play with.</p>
+      <div id="home-cards"></div>
+
+      <div class="callout warn" style="margin-top:40px">
+        <span class="ttl">A few corrections flagged from the source slides</span>
+        Where the lecture slides contain a typo or an oversimplification (e.g. the Black–Scholes σ→0 limit, the TWAP example timing, the "256 trading days" convention), the relevant page flags it explicitly and gives the corrected version. Look for the <b>amber "Note / correction"</b> boxes.
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<button id="to-top" aria-label="Back to top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+</body>
+</html>

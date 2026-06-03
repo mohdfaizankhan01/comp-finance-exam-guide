@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Returns & Time Value of Money — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar">
+  <button class="icon-btn" id="menu-btn" aria-label="Menu"><span class="menu-ic"></span></button>
+  <strong style="font-size:15px">Returns & Time Value of Money</strong>
+  <button class="icon-btn" data-theme-toggle aria-label="Toggle theme" style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 1 · Foundations</div>
+    <h1 class="page-title">Returns & Time Value of Money</h1>
+    <p class="page-lede">How we measure profit and loss, why returns compound instead of add, and why a franc today is worth more than a franc tomorrow.</p>
+
+    <div class="minitoc"><b>On this page</b>
+      <ul>
+        <li><a href="#simple">Simple returns</a></li>
+        <li><a href="#multi">Multi-period & why returns multiply</a></li>
+        <li><a href="#portfolio">Portfolio returns</a></li>
+        <li><a href="#annual">Annualisation</a></li>
+        <li><a href="#tvm">Time value of money</a></li>
+        <li><a href="#cont">Continuous (log) returns</a></li>
+        <li><a href="#book">Bookkeeping & FX hedging</a></li>
+      </ul>
+    </div>
+
+    <!-- ============ SIMPLE RETURNS ============ -->
+    <div class="concept" id="simple">
+      <h2 class="section-h">Simple returns</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>A return is just the percentage change in price between two dates — how much you made or lost as a fraction of what you put in.</p></div>
+
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Prices alone are meaningless for comparison — a CHF 5 gain on a CHF 10 stock (+50%) is wildly better than CHF 5 on a CHF 1000 stock (+0.5%). Returns put every investment on the same scale so we can compare, add up, and model them. Almost everything later (volatility, Sharpe ratios, portfolio theory) is built on returns, not prices.</p></div>
+
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Let \(P(t)\) be the price at time \(t\). The simple (or "arithmetic") return over one period is:</p>
+        <div class="formula">\[ R_1(t) = \frac{P(t)-P(t-1)}{P(t-1)} = \frac{P(t)}{P(t-1)} - 1 \quad\Longleftrightarrow\quad 1+R_1(t)=\frac{P(t)}{P(t-1)} \]</div>
+        <ul class="legend">
+          <li><span class="sym">P(t)</span> price now · <span class="sym">P(t-1)</span> price one period ago</li>
+          <li><span class="sym">R₁(t)</span> the one-period simple return (a fraction; ×100 for %)</li>
+          <li>The quantity \(1+R\) is the <b>gross return</b> — the growth multiplier.</li>
+        </ul>
+        <p>Notice the asymmetry: a price going 50→60 is +20%, but 60→50 is only −16.7%. Equal franc moves give unequal percentage moves, because the denominator changes.</p>
+      </div>
+
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>A return is a <b>report card grade as a percentage, not raw points</b>. Scoring 5 extra points means nothing until you know the test was out of 10 (huge) or out of 1000 (trivial). The denominator is everything.</p></div>
+
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>\(P(t-1)=50,\ P(t)=60\): &nbsp; \(R = 60/50 - 1 = 1.20 - 1 = 0.20 = \mathbf{+20\%}\).<br>
+        Reverse it, \(60\to 50\): &nbsp; \(R = 50/60 - 1 = 0.8\overline{3} - 1 = \mathbf{-16.7\%}\).</p></div>
+
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Why do equal-size price moves give unequal returns?</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why is +20% then −16.7% not a wash?</div><div class="a">Because the percentages are taken against <em>different</em> bases. +20% is measured on 50, −16.7% on 60. To return to the start you need a smaller percentage drop than the percentage gain that took you up. This is exactly why a stock that falls 50% must rise 100% to recover.</div></div>
+          <div class="qa follow"><div class="q">So how should I combine returns to avoid this trap?</div><div class="a">Work with gross returns \((1+R)\) and <b>multiply</b> them, or switch to log returns which <b>add</b> (see below). Never simply sum simple returns over time.</div></div>
+        </div>
+      </details>
+
+      <div class="callout bad"><span class="ttl">Don't say this</span> "A 20% gain followed by a 20% loss puts me back where I started." It doesn't — \(1.20\times0.80 = 0.96\), a 4% loss. Saying this signals you don't understand compounding.</div>
+    </div>
+
+    <!-- ============ MULTI-PERIOD ============ -->
+    <div class="concept" id="multi">
+      <h2 class="section-h">Multi-period returns — why returns multiply</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The total return over several periods is found by multiplying the gross returns of each period together, not by adding the returns.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>This is <b>compounding</b> — the engine of all long-term investing. Getting it wrong (summing instead of compounding) is the single most common beginner error, and an examiner will test whether you know the difference.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Over two periods the prices telescope:</p>
+        <div class="formula">\[ 1+R_2(t)=\frac{P(t)}{P(t-2)}=\underbrace{\frac{P(t)}{P(t-1)}}_{1+R_1(t)}\cdot\underbrace{\frac{P(t-1)}{P(t-2)}}_{1+R_1(t-1)} \]</div>
+        <p>Generalising to \(n\) periods gives a product:</p>
+        <div class="formula">\[ 1+R_n(t)=\prod_{i=0}^{n-1}\big(1+R_1(t-i)\big) \]</div>
+        <p class="legend">The big \(\prod\) means "multiply all of these together". Each factor is one period's growth multiplier.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Like <b>resizing a photo repeatedly</b>. Enlarge by 20%, then shrink by 10% — you don't do "20−10". You scale by 1.20, then by 0.90. Each step works on the <em>already-resized</em> picture, so the operations multiply.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Prices 10 → 12 → 14 → 16. Period returns: +20%, +16.7%, +14.3%.</p>
+        <p><b>Wrong (sum):</b> \(20\%+16.7\%+14.3\% = 50.9\%\) ✗<br>
+        <b>Right (product):</b> \((1.20)(1.167)(1.143)-1 = 1.60-1 = \mathbf{60\%}\) ✓<br>
+        Sanity check directly: \(16/10 - 1 = 60\%\). The product matches; the sum does not.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> When is summing returns ever acceptable?</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Can I ever just add returns?</div><div class="a">Yes — if you use <b>log (continuous) returns</b>, they add exactly over time. And for very small returns over short horizons, simple returns are <em>approximately</em> additive because \(\ln(1+R)\approx R\). But the exact rule for simple returns is always multiplication.</div></div>
+          <div class="qa follow"><div class="q">Why does the textbook bother to point this out?</div><div class="a">Because performance reporting bugs and naïve "average return" claims almost always come from summing or arithmetic-averaging when one should compound (geometric mean).</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- ============ PORTFOLIO ============ -->
+    <div class="concept" id="portfolio">
+      <h2 class="section-h">Portfolio returns</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The return of a basket of assets is the weighted average of the individual asset returns, using the money allocated to each as the weights.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It tells you that <em>across assets at one moment</em>, returns combine <b>linearly</b> (a weighted sum) — in contrast to <em>across time</em>, where they compound. Knowing which combination rule applies in which direction is the key insight, and it underpins Portfolio Theory.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Weights \(\alpha_i\) are the fractions of wealth in each asset, with \(\sum_{i=1}^n\alpha_i=1\). Define the portfolio return \(R_p=\sum_i\alpha_i R_i\). Check it reproduces total wealth growth:</p>
+        <div class="formula">\[ \sum_i \alpha_i(1+R_i)=\underbrace{\sum_i\alpha_i}_{=1}+\sum_i\alpha_i R_i = 1 + R_p \]</div>
+        <p class="legend">So the portfolio's growth multiplier is the weighted average of the assets' multipliers — exactly what "putting 60% here, 40% there" should mean.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Like a <b>blended exam mark</b> where coursework is 30% and the final is 70%: your overall mark is \(0.3\times\text{coursework}+0.7\times\text{final}\). The weights are how much each counts.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>60% in asset A (returns +10%), 40% in asset B (returns −5%):<br>
+        \(R_p = 0.6(0.10)+0.4(-0.05)=0.06-0.02=\mathbf{+4\%}\).</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Returns add across assets but multiply across time — explain.</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why two different rules?</div><div class="a">Across assets <em>at the same instant</em>, you split one pot of money — the wealth-weighted average is linear. Across <em>time</em>, each period's gain becomes next period's base, so multipliers stack multiplicatively. Different directions, different algebra.</div></div>
+          <div class="qa follow"><div class="q">Does the weighted-average rule hold for log returns of a portfolio too?</div><div class="a">No — that's a subtle trap. \(r_p=\ln(1+\sum\alpha_iR_i)\neq\sum\alpha_i r_i\). Log returns add neatly <em>over time</em>, but the portfolio log return is <b>not</b> the weighted average of asset log returns. Use simple returns for cross-sectional (portfolio) aggregation.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- ============ ANNUALISATION ============ -->
+    <div class="concept" id="annual">
+      <h2 class="section-h">Annualisation</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>Rescaling a return measured over one horizon (a day, a month) into the equivalent return per year, so different investments can be compared on common ground.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>"+1% this month" and "+0.04% today" are incomparable until annualised. Because returns compound, you annualise by <b>raising to a power</b>, never by multiplying.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ 1+R_a=(1+R_m)^{12},\qquad 1+R_a=(1+R_d)^{256} \]</div>
+        <p class="legend"><span class="sym">R_a</span> annual · <span class="sym">R_m</span> monthly · <span class="sym">R_d</span> daily. We use 12 months, and ~256 <b>trading</b> days (markets aren't open 365 days; 250 and 252 are also common conventions).</p>
+        <div class="callout warn"><span class="ttl">Note / convention</span> The slides use 256 trading days (it's a tidy \(16^2\), handy because volatility then scales by \(\sqrt{256}=16\)). Many texts use 250 or 252. State your assumption in the exam — examiners care that you <em>declare</em> the convention, not which one you pick.</div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Like converting a <b>per-night hotel rate to an annual cost while it keeps reinvesting</b> — you don't multiply the nightly rate by 365 if interest accrues on interest; you compound it.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>A 1% monthly return annualises to \((1.01)^{12}-1 = 1.1268-1 = \mathbf{12.68\%}\), not 12%. The extra 0.68% is compounding.</p></div>
+      <div class="callout bad"><span class="ttl">Don't say this</span> "1% per month is 12% per year." That undercounts compounding. Worse: "to annualise I multiply daily return by 256."</div>
+    </div>
+
+    <!-- ============ TVM ============ -->
+    <div class="concept" id="tvm">
+      <h2 class="section-h">Time value of money</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>A franc today is worth more than a franc tomorrow, because today's franc can be invested to earn interest. "Discounting" reverses this to value future cash flows today.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It is the foundation under bond pricing, option pricing and every valuation in finance. Whenever cash arrives at different times, you cannot add it up until you bring it to a common date.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>With return \(R\) per period, present value \(PV\) grows to a future value:</p>
+        <div class="formula">\[ FV_n = PV\,(1+R)^n \]</div>
+        <p>If interest is paid \(m\) times per period, slice the rate and multiply the periods:</p>
+        <div class="formula">\[ FV_n^{m}=PV\Big(1+\tfrac{R}{m}\Big)^{m\,n} \]</div>
+        <p>Letting payments become infinitely frequent (\(m\to\infty\)) gives <b>continuous compounding</b>:</p>
+        <div class="formula">\[ FV_n^{\infty}=PV\lim_{m\to\infty}\Big(1+\tfrac{R}{m}\Big)^{mn}=PV\,e^{Rn} \]</div>
+        <details class="acc"><summary><span class="tag derive">Derivation</span> Why the limit is \(e^{Rn}\)</summary>
+          <div class="acc-body">
+            <p>Set \(k=m/R\), so \(m=kR\) and as \(m\to\infty\), \(k\to\infty\):</p>
+            <div class="formula tight">\[ \Big(1+\tfrac{R}{m}\Big)^{mn}=\Big(1+\tfrac1k\Big)^{kRn}=\left[\Big(1+\tfrac1k\Big)^{k}\right]^{Rn}. \]</div>
+            <p>The bracket is the textbook definition of Euler's number: \(\big(1+\tfrac1k\big)^{k}\to e\). Raising the limit to the power \(Rn\) gives \(e^{Rn}\). \(\;\square\)</p>
+          </div>
+        </details>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p><b>A promise of cake next year is worth less than cake now</b> — you could have eaten (or sold) today's cake and put the proceeds to work. Discounting asks: how much cake-now equals that future promise?</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>\(PV=1000\), \(R=10\%\), \(n=1\) year. Compounding more often gives slightly more:</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Frequency</th><th>Formula</th><th class="num">Value</th></tr></thead>
+          <tbody>
+            <tr><td>Annual</td><td><code>1000·(1.10)¹</code></td><td class="num">1100.0</td></tr>
+            <tr><td>Quarterly</td><td><code>1000·(1+0.1/4)⁴</code></td><td class="num">1103.8</td></tr>
+            <tr><td>Weekly</td><td><code>1000·(1+0.1/52)⁵²</code></td><td class="num">1105.1</td></tr>
+            <tr><td>Daily</td><td><code>1000·(1+0.1/365)³⁶⁵</code></td><td class="num">1105.2</td></tr>
+            <tr><td>Continuous</td><td><code>1000·e^0.1</code></td><td class="num">1105.2</td></tr>
+          </tbody>
+        </table></div>
+        <p>More frequent compounding helps, but with rapidly diminishing returns — it converges to the continuous ceiling \(e^{0.1}\).</p>
+      </div>
+      <div class="chart-card">
+        <div id="ch-compound" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> CHF 1000 at 10% for one year, as compounding gets more frequent. It climbs fast then flattens to the continuous limit (dashed) — extra frequency buys less and less.</span></div>
+      </div>
+    </div>
+
+    <!-- ============ CONTINUOUS ============ -->
+    <div class="concept" id="cont">
+      <h2 class="section-h">Continuous (log) returns</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The log return is the natural logarithm of the gross return — the return you'd quote if interest compounded continuously.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Two superpowers: log returns <b>add across time</b> (no messy products), and they are <b>symmetric</b> (a move up and the equal move back down cancel exactly). That is why quants model log returns — it makes the calculus of Black–Scholes and time-series models clean.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ r(t)=\ln\big(1+R(t)\big)=\ln\frac{P_t}{P_{t-1}}=\ln P_t-\ln P_{t-1} \]</div>
+        <p>Over two periods they simply add:</p>
+        <div class="formula">\[ r_2(t)=\ln\frac{P_t}{P_{t-2}}=\ln\frac{P_t}{P_{t-1}}+\ln\frac{P_{t-1}}{P_{t-2}}=r_1(t)+r_1(t-1),\qquad r_n(t)=\sum_{i=0}^{n-1}r_1(t-i) \]</div>
+        <p>Link to the continuous rate: since \(PV(1+R)^n=PV\,e^{rn}\), we get \(r=\ln(1+R)\), and because \(\ln(1+R)\lt R\) for \(R\gt 0\), the continuous rate is always slightly <b>below</b> the simple rate.</p>
+        <ul class="legend"><li>Example: \(R=10\%\Rightarrow r=\ln(1.1)=9.53\%\), and indeed \(1000\,e^{0.0953}=1100\). ✓</li></ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Log returns are like <b>measuring distance in "doublings" (octaves) instead of metres</b>. On a ratio scale, going up then back down by the same factor returns you exactly to the start, and multi-leg journeys just add up.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>50→60: \(r=\ln(60/50)=\ln 1.2=+18.23\%\). 60→50: \(r=\ln(50/60)=-18.23\%\). Perfectly symmetric — the +20% / −16.7% asymmetry of simple returns has vanished.</p></div>
+      <div class="chart-card">
+        <div id="ch-logsimple" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> simple vs log return for the same price ratio. They agree for small moves (the dashed 45° line) but diverge for large ones — log returns are symmetric about zero, simple returns are not.</span></div>
+      </div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Trade-offs between simple and log returns</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">When do you use each?</div><div class="a"><b>Log returns:</b> aggregating over time, statistical/stochastic modelling, anything involving calculus. <b>Simple returns:</b> aggregating across assets in a portfolio (weighted average), and when reporting actual P&L to a client.</div></div>
+          <div class="qa"><div class="q">Why is \(r\lt R\)?</div><div class="a">\(\ln(1+R)\) is concave and lies below the line \(y=R\) for \(R\gt 0\). Intuitively, continuous compounding earns interest-on-interest constantly, so a <em>smaller</em> continuous rate achieves the same end value as a given simple rate.</div></div>
+          <div class="qa follow"><div class="q">Are they ever equal?</div><div class="a">Only in the limit \(R\to0\), where \(\ln(1+R)\approx R\). For small daily moves the two are nearly identical, which is why the approximation is so widely used.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- ============ BOOKKEEPING ============ -->
+    <div class="concept" id="book">
+      <h2 class="section-h">Bookkeeping, currency risk & hedging</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>Tracking a portfolio's Net Asset Value (NAV) in your <em>home</em> currency, which means foreign holdings carry two risks: the asset itself, and the exchange rate.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>A Swiss investor in Apple can be <em>right about Apple and still lose money</em> if the dollar falls. Recognising and optionally removing (hedging) that FX risk is a core practical skill — and a natural bridge to options, futures and forwards.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>NAV in CHF for a USD asset:</p>
+        <div class="formula">\[ \text{NAV} = (\text{shares}\times P_{\text{asset,USD}})\times (\text{USD\_CHF}) + \text{Cash} \]</div>
+        <p>If USD_CHF moves against you, the asset can recover fully in USD yet your CHF NAV still ends lower. A <b>hedge</b> (e.g. a short USD position via a forward) cancels the FX leg — but it has a cost (the interest-rate differential, the "carry").</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Buying a foreign stock is like <b>betting on a horse in a foreign country</b>: you can pick the winning horse (the asset) and still come home poorer if that country's currency tanks before you cash out. Hedging is buying <b>travel-money insurance</b> on the exchange rate — useful, but it isn't free.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Buy 10 AAPL at $45 with USD_CHF = 0.90. Apple ends back at $49 (up in USD) but USD_CHF slips 0.90→0.88. The equity leg is positive, the FX leg negative; net CHF P&L can be slightly negative (≈ −CHF 0.8 in the slide). Add a hedge and the NAV becomes far less volatile — only the equity risk remains — at a small hedging cost (≈ CHF 2.4).</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Currency risk & hedging</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Name the two risks a CHF investor faces buying a US stock.</div><div class="a">Equity (price) risk and FX (USD_CHF) risk. NAV depends on the product of the two, plus any cash/carry.</div></div>
+          <div class="qa"><div class="q">Can FX risk be removed, and what's the catch?</div><div class="a">Yes — short the foreign currency (typically via a forward/future) sized to the position. The catch is cost: you give up (or pay) the interest-rate differential, called the carry, and you must rebalance the hedge as the position value moves.</div></div>
+          <div class="qa follow"><div class="q">Does hedging make you richer?</div><div class="a">No — it reduces <em>variance</em>, not expected return (often it slightly lowers return via cost). You hedge to control risk, not to chase return.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "Returns turn prices into comparable percentages; they <b>compound (multiply) over time</b> but <b>weight-average across assets</b>; log returns make time-aggregation additive and symmetric; and because money has a time value, future cash must be discounted — continuous compounding being the \(e^{rt}\) limit of ever-more-frequent interest."</div>
+
+    <div class="revise-bar">
+      <button class="btn primary" id="revise-btn" data-id="returns"><span class="lbl">Mark this topic as revised</span></button>
+      <span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span>
+    </div>
+    <div class="page-nav" id="page-nav"></div>
+
+  </div></main>
+</div>
+<button id="to-top" aria-label="Back to top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+function draw(){
+  const C=CF.colors();
+  // compounding frequency
+  const PV=1000,R=0.1;
+  const freqs=[1,2,4,12,52,365,1000,5000];
+  const vals=freqs.map(m=>PV*Math.pow(1+R/m,m));
+  Plotly.react('ch-compound',[
+    {x:freqs.map(String),y:vals,type:'scatter',mode:'lines+markers',name:'Future value',line:{color:C.accent,width:3},marker:{size:7}},
+    {x:freqs.map(String),y:freqs.map(()=>PV*Math.exp(R)),type:'scatter',mode:'lines',name:'Continuous limit  PV·e^{R}',line:{color:C.bad,width:2,dash:'dash'}}
+  ],CF.layout({xaxis:{title:'Compounding periods per year (log-spaced labels)',gridcolor:C.grid,type:'category'},yaxis:{title:'Value after 1 year (CHF)',gridcolor:C.grid,range:[1098,1107]}}),CF.config);
+
+  // simple vs log
+  const ratios=[];for(let g=-0.6;g<=0.9;g+=0.02)ratios.push(g);
+  const simple=ratios.map(g=>g*100);
+  const logs=ratios.map(g=>Math.log(1+g)*100);
+  Plotly.react('ch-logsimple',[
+    {x:simple,y:logs,type:'scatter',mode:'lines',name:'log vs simple',line:{color:C.accent,width:3}},
+    {x:[-60,90],y:[-60,90],type:'scatter',mode:'lines',name:'45° (equal)',line:{color:C.mute,width:1.5,dash:'dot'}}
+  ],CF.layout({hovermode:'closest',xaxis:{title:'Simple return  R (%)',gridcolor:C.grid,zeroline:true},yaxis:{title:'Log return  r = ln(1+R) (%)',gridcolor:C.grid,zeroline:true}}),CF.config);
+}
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

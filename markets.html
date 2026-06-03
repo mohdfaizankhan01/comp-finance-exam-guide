@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markets & Behaviours — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar"><button class="icon-btn" id="menu-btn"><span class="menu-ic"></span></button><strong style="font-size:15px">Markets & Behaviours</strong><button class="icon-btn" data-theme-toggle style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button></div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 3 · Markets & Microstructure</div>
+    <h1 class="page-title">Markets & Behaviours</h1>
+    <p class="page-lede">Are markets rational and unbeatable, or full of structure? Where we trade, what we trade, and the "stylised facts" that prove real prices aren't a simple random walk.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#emh">Efficient Market Hypothesis</a></li>
+      <li><a href="#where">Where we trade</a></li>
+      <li><a href="#assets">Assets & instruments</a></li>
+      <li><a href="#facts">Stylised facts</a></li>
+      <li><a href="#events">Market events</a></li>
+    </ul></div>
+
+    <div class="concept" id="emh">
+      <h2 class="section-h">The Efficient Market Hypothesis (EMH)</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>The claim (Fama, 1960s; Nobel 2013) that prices already reflect all available information, so you can't systematically beat the market — prices are always "right".</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>It's the central debate of finance. If EMH holds, active management and technical analysis are pointless and you should index. If it fails, there's structure to exploit — the entire quant industry bets that it does fail, at least a little.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Three nested forms, by what "all information" includes:</p>
+        <ul>
+          <li><b>Weak:</b> prices reflect all <em>past price</em> data → technical analysis is useless; price is a random walk driven only by new (exogenous) information.</li>
+          <li><b>Semi-strong:</b> prices instantly reflect all <em>public</em> information (news, fundamentals) → fundamental analysis of public data won't give an edge.</li>
+          <li><b>Strong:</b> prices reflect <em>all</em> information, public <em>and private</em> → even insiders can't profit.</li>
+        </ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>EMH says the market is a <b>classroom where everyone instantly shares every answer</b>. The moment a fact is known, it's priced — so there's no leftover "easy mark" to grab.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Evidence against</div><p>Markets look far from fully rational: prolonged over-valuations vs fundamentals, herding, the persistent success of a Buffett or Soros (luck?), the 2010 Flash Crash, and the Bitcoin bubble. The weak form is criticised even on its own turf.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> EMH probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">State the three forms and what each rules out.</div><div class="a">Weak (past prices priced in → no technical analysis), semi-strong (all public info priced in → no fundamental edge), strong (public + private priced in → even insider info useless).</div></div>
+          <div class="qa"><div class="q">How do bubbles and crashes square with EMH?</div><div class="a">They're hard to reconcile — sustained mispricing (Bitcoin) and liquidity-driven crashes (Flash Crash) suggest prices aren't always "right", challenging even the weak form.</div></div>
+          <div class="qa follow"><div class="q">If markets were strong-form efficient, why do quants exist?</div><div class="a">Because they bet efficiency is imperfect and transient — small, exploitable structure (the stylised facts below) survives long enough to trade, even if classic "free money" doesn't.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="concept" id="where">
+      <h2 class="section-h">Where we trade</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Regulated exchanges</b> (NYSE, LSE, CME, SIX): a defined, strictly-regulated venue with a clearing process; increasingly electronic. Most volume happens here.</li>
+          <li><b>OTC (Over-The-Counter)</b> (e.g. Oanda): less formal, riskier, run by <b>market makers</b> who quote prices and carry an inventory; no central transparency, not necessarily a physical place.</li>
+          <li><b>Market maker</b> (Oanda) holds inventory ⇒ takes risk ⇒ is paid via the spread. A <b>broker</b> (Dukascopy) just routes orders ⇒ no inventory, no price risk.</li>
+        </ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>An exchange is a <b>regulated farmers' market with a referee</b>; OTC is <b>haggling with a dealer in their shop</b> — more flexible, less transparent, and you trust the dealer's quote.</p></div>
+    </div>
+
+    <div class="concept" id="assets">
+      <h2 class="section-h">Assets & main instruments</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p><b>Asset classes:</b> equity (dividends), bonds (loans to states/companies), commodities (wheat, oil — via futures), currencies (traded in pairs, with an interest-rate differential). Currencies are the backbone — the FX market is the largest, ~$5 trillion/day, a quarter of it EUR/USD.</p>
+        <p><b>Instruments:</b> spot (the thing itself), forward (agree to trade later at a set price), future (standardised, exchange-traded forward), <b>option</b> (a right, not obligation, to trade), index (a basket like the S&P 500), and other derivatives. Futures are rolled before delivery to stay exposed without receiving the physical wheat; options and futures are also used to hedge.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Spot is buying apples today; a forward/future is pre-agreeing next month's apple price; an option is paying for the <em>right</em> to buy apples at a set price; an index is a fruit basket you trade as one unit.</p></div>
+    </div>
+
+    <div class="concept" id="facts">
+      <h2 class="section-h">Stylised facts — why prices aren't a random walk</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>Robust statistical regularities seen across virtually all markets that a simple Gaussian random walk fails to reproduce.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>They're the fingerprints of real markets (human + algorithmic interaction). They directly challenge EMH-style randomness and motivate richer models (GARCH, agent-based models) and risk management — fat tails mean disasters are more common than a bell curve predicts.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Volatility clustering:</b> big moves follow big moves, calm follows calm (heteroskedasticity — the "H" in GARCH).</li>
+          <li><b>Fat tails:</b> extreme returns are far more likely than the normal distribution says.</li>
+          <li><b>Negative autocorrelation at short lags</b> (high frequency).</li>
+          <li><b>Scaling laws:</b> self-similar behaviour across timescales, e.g. \(E[|r|]\sim\Delta t^{\,\alpha}\).</li>
+          <li>Plus seasonality (daily/weekly/annual), equity asymmetry, spread–volume and volume–volatility correlations.</li>
+        </ul>
+      </div>
+      <div class="chart-card">
+        <div id="ch-tails" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> a normal distribution vs a fat-tailed one with the same variance. The fat-tailed curve is taller in the middle <em>and</em> heavier in the tails (look at the edges) — those tails are the extreme crashes/rallies that a Gaussian random walk badly underestimates.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>A random walk assumes the weather is mild and independent day to day. Real markets have <b>storm seasons</b> (volatility clusters) and <b>once-a-century floods that happen every decade</b> (fat tails).</p></div>
+      <div class="callout bad"><span class="ttl">Don't say this</span> "Returns are normally distributed." They aren't — they're fat-tailed and show volatility clustering. Assuming normality is exactly what underestimates tail risk (and a flaw behind Black–Scholes' volatility smile).</div>
+    </div>
+
+    <div class="concept" id="events">
+      <h2 class="section-h">Market events</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Events are <b>endogenous</b> (from inside — e.g. liquidity shortages triggering cascades) or <b>exogenous</b> (from outside — news).</p>
+        <ul>
+          <li><b>Scheduled news:</b> US Non-Farm Payrolls (first Friday, 8:30am EST), GDP releases, housing/consumption indicators.</li>
+          <li><b>Unscheduled:</b> the SNB's 2011 EUR/CHF floor, geopolitical shocks, terror attacks.</li>
+        </ul>
+        <p>Both can move prices violently; quantifying their footprint is an active research area.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Exogenous events are <b>lightning from outside</b> (news you couldn't predict); endogenous events are <b>the building collapsing under its own weight</b> (a liquidity hole feeding on itself).</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Markets probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Give two stylised facts and why they break the random-walk model.</div><div class="a">Volatility clustering (the random walk assumes constant, independent volatility) and fat tails (the random walk's Gaussian steps make extreme moves astronomically rare, but they happen often).</div></div>
+          <div class="qa"><div class="q">Market maker vs broker?</div><div class="a">A market maker quotes prices, holds inventory, takes risk, and earns the spread. A broker only routes client orders, holds no inventory, and takes no price risk.</div></div>
+          <div class="qa follow"><div class="q">Endogenous vs exogenous events — example of each.</div><div class="a">Endogenous: a Flash-Crash-style liquidity evaporation. Exogenous: a scheduled NFP surprise or a surprise central-bank decision (SNB floor).</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "EMH says prices reflect all information (weak/semi-strong/strong) so markets can't be beaten — but bubbles, crashes and especially the <b>stylised facts</b> (volatility clustering, fat tails, scaling laws) show real prices are <em>not</em> a simple random walk, leaving structure that quants try to exploit."</div>
+
+    <div class="revise-bar"><button class="btn primary" id="revise-btn" data-id="markets"><span class="lbl">Mark this topic as revised</span></button><span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span></div>
+    <div class="page-nav" id="page-nav"></div>
+  </div></main>
+</div>
+<button id="to-top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+function draw(){
+  const C=CF.colors();
+  const xs=[];for(let x=-6;x<=6;x+=0.1)xs.push(x);
+  const norm=xs.map(x=>Math.exp(-x*x/2)/Math.sqrt(2*Math.PI));
+  // student-t-like fat tail (nu=3), scaled to similar peak
+  const nu=3;const c=1;
+  const t=xs.map(x=>c*Math.pow(1+x*x/nu,-(nu+1)/2));
+  const tmax=Math.max(...t),nmax=Math.max(...norm);
+  const tt=t.map(v=>v/tmax*0.46);
+  Plotly.react('ch-tails',[
+    {x:xs,y:norm,name:'Normal (Gaussian)',line:{color:C.mute,width:2.5,dash:'dash'}},
+    {x:xs,y:tt,name:'Fat-tailed (real returns)',line:{color:C.accent,width:3}}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'Return (standard deviations)',gridcolor:C.grid},yaxis:{title:'Probability density',gridcolor:C.grid,rangemode:'tozero'}}),CF.config);
+}
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

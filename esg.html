@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESG / Sustainable Investing — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar"><button class="icon-btn" id="menu-btn"><span class="menu-ic"></span></button><strong style="font-size:15px">ESG / Sustainable Investing</strong><button class="icon-btn" data-theme-toggle style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button></div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 14 · Modern Topics</div>
+    <h1 class="page-title">ESG / Sustainable Investing</h1>
+    <p class="page-lede">Folding environmental, social and governance factors into investment decisions — measured by imperfect scores, acted on through several strategies.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#why">Why sustainable investing</a></li>
+      <li><a href="#def">Definition & pillars</a></li>
+      <li><a href="#score">Scoring</a></li>
+      <li><a href="#strat">Strategies</a></li>
+      <li><a href="#practice">In practice</a></li>
+    </ul></div>
+
+    <div class="concept" id="why">
+      <h2 class="section-h">Why sustainable investing</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>Investing that weighs a company's <b>E</b>nvironmental, <b>S</b>ocial and <b>G</b>overnance behaviour alongside its financials.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>Climate change, biodiversity loss, social inequality and governance failures are real risks <em>and</em> real externalities. Finance can't solve them alone, but it can steer capital. It's a fast-growing field with rising regulation — and a likely exam topic precisely because it's current and nuanced.</p></div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Like <b>nutrition labels for companies</b>: traditional analysis tells you the price; ESG tells you what's <em>in</em> the product (carbon, labour practices, board quality) so you can avoid choices that look cheap but are harmful.</p></div>
+    </div>
+
+    <div class="concept" id="def">
+      <h2 class="section-h">Definition, pillars & themes</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>E — Environmental:</b> carbon emissions, resource use, pollution, climate risk.</li>
+          <li><b>S — Social:</b> labour practices, human rights, gender equality, community impact.</li>
+          <li><b>G — Governance:</b> board structure, executive pay, shareholder rights, transparency.</li>
+        </ul>
+        <p>Sustainable investing is <em>daunting</em>: data is patchy, definitions vary, and it's easy to greenwash. Related acronyms: <b>SDG</b> (UN Sustainable Development Goals), <b>ITR</b> (Implied Temperature Rise), carbon <b>Scopes 1/2/3</b> (direct, energy, supply-chain emissions).</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>E, S and G are three <b>separate report-card subjects</b>. A company can ace governance but flunk emissions — and a single overall grade can hide that.</p></div>
+    </div>
+
+    <div class="concept" id="score">
+      <h2 class="section-h">Scoring</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Providers (MSCI, Sustainalytics, …) issue ESG scores — typically a <b>weighted average</b> of E, S and G pillar scores, mapped to a ranking. Key points:</p>
+        <ul>
+          <li>Many systems disagree, but their scores are <b>highly correlated</b> overall.</li>
+          <li>Corporates are scored more than governments (data on states is improving).</li>
+          <li>Carbon emissions are measured/estimated across Scopes 1-3; the future is modelled via scenarios (e.g. Implied Temperature Rise).</li>
+          <li>Scores tend to <b>rise over time</b> (companies improve disclosure/behaviour — Lundström 2021).</li>
+          <li>Credit ratings do <em>not</em> include ESG — they're separate lenses.</li>
+        </ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>ESG scores are like <b>different restaurant-review sites</b>: they rarely give identical stars, but a place everyone rates highly is probably genuinely good. Disagreement at the margins is normal.</p></div>
+      <div class="callout warn"><span class="ttl">Key nuance to mention</span> ESG data is noisy and providers disagree (low "rating consensus" at the company level even if broadly correlated). Always flag <b>data quality and comparability</b> as the central challenge — it signals real understanding.</div>
+    </div>
+
+    <div class="concept" id="strat">
+      <h2 class="section-h">Strategies</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Integration:</b> bake ESG metrics into normal analysis/benchmarks (dashboards, climate scores).</li>
+          <li><b>Exclusion:</b> screen out the worst (coal, controversial weapons, norm violators).</li>
+          <li><b>Engagement:</b> dialogue with issuers to push change (e.g. on child labour in cocoa supply chains).</li>
+          <li><b>Voting:</b> exercise shareholder voting rights at AGMs (e.g. against abusive executive pay).</li>
+          <li><b>Impact:</b> deliberately fund measurable positive outcomes.</li>
+        </ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>As a shareholder you can <b>refuse to shop somewhere (exclusion), complain to management (engagement), vote at the AGM (voting), or seek out the good guys (impact)</b> — different levers, different effort/effect.</p></div>
+    </div>
+
+    <div class="concept" id="practice">
+      <h2 class="section-h">In practice (compenswiss example)</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>A real pension fund (compenswiss) combines four pillars — integration, voting (~100 AGMs/year in CH), engagement (dialogue with 150+ issuers, e.g. cocoa child labour, via the cofounded ASIR), and exclusions (~100 companies, normative + coal). Carbon-footprint analysis of the portfolio (tCO₂e / $M invested) tracks progress vs benchmark over time.</p>
+        <p>The recurring theme: <b>data and tools are essential</b> — you can't manage what you can't measure, and traversing data through time and structures is what reveals reality (and unexpected consequences).</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Like a <b>household trying to cut its carbon footprint</b>: you need a meter (data) to know where the energy goes, then a mix of switching suppliers (exclusion), nagging the landlord (engagement) and voting in the building committee (voting).</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> ESG probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">What do E, S and G stand for, with an example each?</div><div class="a">Environmental (carbon emissions), Social (labour/human rights, gender equality), Governance (board structure, executive pay). An overall ESG score is usually a weighted average of the three pillars.</div></div>
+          <div class="qa"><div class="q">Biggest challenge in ESG investing?</div><div class="a">Data — it's patchy, inconsistent across providers, and prone to greenwashing. Scores are broadly correlated but disagree at the company level; governments are under-covered.</div></div>
+          <div class="qa"><div class="q">Name the main ESG strategies.</div><div class="a">Integration, exclusion, engagement, voting, and impact — from passively factoring ESG in, to actively screening out, pressuring, voting, or directly funding good outcomes.</div></div>
+          <div class="qa follow"><div class="q">Do ESG factors appear in credit ratings?</div><div class="a">No — traditional credit ratings (S&P, Moody's) assess default risk only and don't incorporate sustainability; ESG is a separate, parallel assessment.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "ESG investing weighs Environmental, Social and Governance behaviour beside financials. It's measured by provider <b>scores</b> (broadly correlated but noisy — data is the key challenge) and acted on via integration, exclusion, engagement, voting and impact. Finance can't fix sustainability alone, but data-driven tools let it measure progress and steer capital."</div>
+
+    <div class="revise-bar"><button class="btn primary" id="revise-btn" data-id="esg"><span class="lbl">Mark this topic as revised</span></button><span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span></div>
+    <div class="page-nav" id="page-nav"></div>
+  </div></main>
+</div>
+<button id="to-top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+</body>
+</html>

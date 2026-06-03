@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Options — Basics — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar">
+  <button class="icon-btn" id="menu-btn" aria-label="Menu"><span class="menu-ic"></span></button>
+  <strong style="font-size:15px">Options — Basics</strong>
+  <button class="icon-btn" data-theme-toggle aria-label="Toggle theme" style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 9 · Derivatives</div>
+    <h1 class="page-title">Options — Basics</h1>
+    <p class="page-lede">What calls and puts are, how their payoffs look, the no-arbitrage bounds and put–call parity, and the two great pricing engines: the binomial tree and Black–Scholes.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#def">What an option is</a></li>
+      <li><a href="#payoff">Payoffs & profit diagrams</a></li>
+      <li><a href="#vars">Variables & moneyness</a></li>
+      <li><a href="#bounds">No-arbitrage price bounds</a></li>
+      <li><a href="#parity">Put–call parity</a></li>
+      <li><a href="#strat">Trading strategies</a></li>
+      <li><a href="#binom">Binomial tree pricing</a></li>
+      <li><a href="#bs">Black–Scholes</a></li>
+      <li><a href="#smile">Volatility smile</a></li>
+    </ul></div>
+
+    <!-- DEF -->
+    <div class="concept" id="def">
+      <h2 class="section-h">What an option is</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>An option is the <b>right, but not the obligation</b>, to buy (a <em>call</em>) or sell (a <em>put</em>) an asset at a fixed price (the <em>strike</em> \(K\)) up to a fixed date (the <em>maturity</em> \(T\)).</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Options are <b>insurance contracts on price</b>. They let you cap your downside, take leveraged bets, or sell protection for income. The whole field of derivatives pricing exists to answer: <em>what is the fair premium for that right?</em></p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Four basic positions arise from {buy, sell} × {call, put}:</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Position</th><th>You hold</th><th>Pay or receive premium?</th><th>Your view</th></tr></thead>
+          <tbody>
+            <tr><td><b>Long call</b></td><td>right to buy</td><td>pay</td><td>bullish</td></tr>
+            <tr><td><b>Long put</b></td><td>right to sell</td><td>pay</td><td>bearish / protection</td></tr>
+            <tr><td><b>Short call</b> (write)</td><td>obligation to sell if exercised</td><td>receive</td><td>neutral/bearish, risky</td></tr>
+            <tr><td><b>Short put</b> (write)</td><td>obligation to buy if exercised</td><td>receive</td><td>neutral/bullish</td></tr>
+          </tbody>
+        </table></div>
+        <p><b>European</b> options can be exercised only at \(T\); <b>American</b> options at any time up to \(T\). Most traded options are American, but theory usually starts with European for simplicity.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>A call is a <b>"hold this price for me" coupon</b>. You pay a small fee to lock in buying a concert ticket at face value next month: if the price soars, you cash in the coupon; if it crashes, you bin the coupon and buy cheaper. You only ever lose the fee. The seller of the coupon pockets your fee but is on the hook if the price soars.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Long call, premium \(c=\$5\), strike \(K=\$60\). At maturity if the stock \(S_T=\$65\): exercise — buy at 60, worth 65 → payoff \(\$5\), profit \(5-5=\$0\) (break-even). If \(S_T=\$75\): payoff \(\$15\), profit \(\$10\). If \(S_T=\$50\): don't exercise, lose only the \(\$5\) premium.</p></div>
+    </div>
+
+    <!-- PAYOFF -->
+    <div class="concept" id="payoff">
+      <h2 class="section-h">Payoffs & profit diagrams</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>A diagram of your profit at maturity as a function of the underlying price \(S_T\). It's the single most useful picture in options.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It shows at a glance your maximum loss, maximum gain and break-even. It also reveals the dangerous asymmetry of <em>writing</em> options: a short call has <b>theoretically unlimited loss</b>.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Profit = payoff − premium (signs flip for short positions):</p>
+        <div class="formula">\[ \text{Long call: } \max(S_T-K,0)-c \qquad \text{Long put: } \max(K-S_T,0)-p \]</div>
+        <div class="formula">\[ \text{Short call: } c-\max(S_T-K,0) \qquad \text{Short put: } p-\max(K-S_T,0) \]</div>
+        <p class="legend">A long position is the mirror image of the matching short across the horizontal axis — what one side gains, the other loses (options are zero-sum before fees).</p>
+      </div>
+      <div class="chart-card">
+        <div class="chart-controls">
+          <div class="ctrl"><label>Strike K <span class="val" id="pf-kv">60</span></label><input id="pf-k" type="range" min="40" max="80" value="60" step="1"></div>
+          <div class="ctrl"><label>Premium <span class="val" id="pf-pv">5</span></label><input id="pf-p" type="range" min="1" max="15" value="5" step="0.5"></div>
+        </div>
+        <div id="ch-payoff" class="chart tall"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> the four basic positions. Long call/put have capped loss (the premium) and large upside. <b>Short call</b> (red dashed) is the scary one — losses grow without limit as the price rises. Drag the sliders to see how strike and premium shift break-even.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Buying an option is like <b>buying insurance</b>: small fixed premium, big payout in the bad scenario. Writing an option is like <b>being the insurance company</b>: steady premium income, but you carry the tail risk — and for a short call that tail is bottomless.</p></div>
+      <div class="callout bad"><span class="ttl">Don't say this</span> "Writing options is safe because you collect the premium." A naked short call has unlimited downside. Always mention the asymmetric risk of writing.</div>
+    </div>
+
+    <!-- VARS -->
+    <div class="concept" id="vars">
+      <h2 class="section-h">Variables & moneyness</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The handful of inputs that set an option's price, and the jargon for where the strike sits relative to the spot.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Every Greek (next lecture) is a derivative of the price with respect to one of these. Knowing the six inputs cold is the foundation for everything that follows.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><span class="sym">S₀</span> spot price now · <span class="sym">K</span> strike · <span class="sym">T</span> time to maturity</li>
+          <li><span class="sym">σ</span> volatility of the underlying · <span class="sym">r</span> risk-free rate · payments (dividends/coupons)</li>
+        </ul>
+        <p><b>Moneyness</b> (for a call): \(K=S_0\) <em>at the money</em>; \(K&lt;S_0\) <em>in the money</em> (immediate exercise value); \(K&gt;S_0\) <em>out of the money</em>.</p>
+        <div class="callout warn"><span class="ttl">Note / careful</span> The slide states call moneyness as "\(K&gt;S_0\) in the money". That's reversed. A <b>call</b> is in-the-money when \(S_0&gt;K\) (i.e. \(K&lt;S_0\)) — you'd want to exercise. For a <b>put</b> it's the opposite: in-the-money when \(K&gt;S_0\). Use intrinsic value to stay safe: a call's intrinsic value is \(\max(S_0-K,0)\); positive ⇒ in the money.</div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Moneyness is "<b>how good is my coupon right now?</b>" In-the-money = the coupon already beats the market price. Out-of-the-money = the coupon is useless at today's price but still has hope while time remains.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Spot \(S_0=\$52\). A \(\$50\) call is in-the-money (intrinsic \(\$2\)). A \(\$55\) call is out-of-the-money (intrinsic \(\$0\), but time value &gt; 0). A \(\$55\) put is in-the-money (intrinsic \(\$3\)).</p></div>
+    </div>
+
+    <!-- BOUNDS -->
+    <div class="concept" id="bounds">
+      <h2 class="section-h">No-arbitrage price bounds</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>Hard limits on what a call or put can cost, derived purely from "there should be no free lunch" — before any pricing model.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>They show the power of <b>arbitrage arguments</b>: you can pin prices without assuming anything about probabilities. This reasoning is the backbone of all derivative pricing, and examiners love it.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ S_0 - K e^{-rT} \;\le\; c \;\le\; S_0 \qquad\qquad K e^{-rT} - S_0 \;\le\; p \;\le\; K \]</div>
+        <ul class="legend"><li><span class="sym">c, p</span> call / put price · <span class="sym">Ke^{-rT}</span> present value of the strike (discounting the strike back to today).</li></ul>
+        <details class="acc"><summary><span class="tag derive">Derivation</span> Upper bound \(c\le S_0\) and lower bound \(c\ge S_0-Ke^{-rT}\)</summary>
+          <div class="acc-body">
+            <p><b>Upper bound.</b> If \(c&gt;S_0\), sell the call and buy the stock. You pocket \(c-S_0&gt;0\) today and own the stock, which always covers your obligation to deliver. Risk-free profit ⇒ impossible. Hence \(c\le S_0\).</p>
+            <p><b>Lower bound (portfolio comparison).</b> Compare two portfolios:</p>
+            <ul><li><b>A:</b> one call + cash \(Ke^{-rT}\) (which grows to \(K\) at \(T\)).</li><li><b>B:</b> one share \(S\).</li></ul>
+            <p>At maturity: if \(S_T&gt;K\), A = \((S_T-K)+K = S_T\); if \(S_T\le K\), A = \(0+K=K&gt;S_T\). So A is <em>always ≥</em> B. By no-arbitrage today's values obey the same order: \(c+Ke^{-rT}\ge S_0\), i.e. \(c\ge S_0-Ke^{-rT}\). A symmetric argument gives \(p\ge Ke^{-rT}-S_0\). \(\;\square\)</p>
+          </div>
+        </details>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>An option can never be worth more than the thing it controls (a coupon to buy a car can't cost more than the car), and never so cheap that owning "call + cash" beats owning the stock outright for free.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>\(S_0=\$50\), \(K=\$48\), \(r=5\%\), \(T=1\): \(Ke^{-rT}=48e^{-0.05}=\$45.66\). So \(c\ge 50-45.66=\$4.34\) and \(c\le \$50\). Any quoted call below $4.34 is an arbitrage.</p></div>
+    </div>
+
+    <!-- PARITY -->
+    <div class="concept" id="parity">
+      <h2 class="section-h">Put–call parity</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>An exact equation linking the price of a European call and put with the same strike and maturity. Know three of the four prices and you know the fourth.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It means calls and puts are not independent instruments — they are two views of the same thing. It's a model-free relationship (no Black–Scholes needed), used constantly to spot mispricings and to synthesise one option from the other.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ c + Ke^{-rT} \;=\; p + S_0 \]</div>
+        <details class="acc"><summary><span class="tag derive">Derivation</span> Two portfolios worth the same at \(T\)</summary>
+          <div class="acc-body">
+            <p><b>A:</b> call + cash \(Ke^{-rT}\). &nbsp; <b>C:</b> put + one share.</p>
+            <p>At maturity both are worth \(\max(S_T,K)\):</p>
+            <ul>
+              <li>If \(S_T&gt;K\): A = \((S_T-K)+K=S_T\); C = \(0+S_T=S_T\). ✓</li>
+              <li>If \(S_T\le K\): A = \(0+K=K\); C = \((K-S_T)+S_T=K\). ✓</li>
+            </ul>
+            <p>Equal payoff in every state ⇒ equal price today: \(c+Ke^{-rT}=p+S_0\). \(\;\square\)</p>
+          </div>
+        </details>
+        <p>Rearranged, it shows a long call + short put (same K, T) replicates a forward on the stock: \(c-p=S_0-Ke^{-rT}\).</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Two recipes, same cake. "Call + cash" and "put + stock" are different ingredient lists that bake into <em>identical</em> outcomes — so they must cost the same, or you'd buy the cheap recipe and sell the dear one.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>\(S_0=\$50\), \(K=\$50\), \(r=5\%\), \(T=1\), call \(c=\$6\). Then \(p=c+Ke^{-rT}-S_0=6+50e^{-0.05}-50=6+47.56-50=\$3.56\). If the market quotes the put at $5, sell the put + stock, buy call + bond, lock in the gap.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Put–call parity probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Does parity hold for American options?</div><div class="a">Not as an equality — early exercise breaks the replication. For American options you get inequalities (bounds) instead of the clean equation. The clean parity is a <b>European</b> result.</div></div>
+          <div class="qa"><div class="q">What assumptions does it need?</div><div class="a">No arbitrage, ability to borrow/lend at \(r\), no dividends (or include their PV: \(c+Ke^{-rT}+D=p+S_0\)), no transaction costs. Notably it needs <em>no</em> assumption about volatility or the price distribution.</div></div>
+          <div class="qa follow"><div class="q">If implied volatility differs between the call and put at the same strike, what's wrong?</div><div class="a">Nothing fundamental — parity is about <em>prices</em>, not vols. If both are priced consistently, the implied vols of a European call and put at the same K,T are equal; a persistent gap signals dividends, rates, or a quoting/arbitrage issue.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- STRATEGIES -->
+    <div class="concept" id="strat">
+      <h2 class="section-h">Trading strategies</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>Combining options (and the stock) to sculpt a desired payoff shape — capping risk, cheapening a bet, or profiting from a view on volatility.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It shows options are <b>building blocks</b>. Protective puts let pension funds floor their losses; spreads let you express precise views cheaply.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Protective put</b> = long stock + long put → a call-like shape with a floor; this is exactly put–call parity in action.</li>
+          <li><b>Bull spread</b> = long call at \(K_1\) + short call at \(K_2\) (\(K_2&gt;K_1\)) → bullish, but cheaper and with capped upside.</li>
+          <li><b>Butterfly</b> = long call \(K_1\) + 2 short calls \(K_2\) + long call \(K_3\) → bets the price lands near \(K_2\) (low volatility).</li>
+        </ul>
+      </div>
+      <div class="chart-card">
+        <div id="ch-strat" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> a <b>protective put</b> (stock + put). Below the strike your losses are floored; above it you keep the upside minus the premium — the classic insurance shape, and a visual proof of put–call parity.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>A protective put is <b>collision insurance on your car</b>: keep all the upside if the car holds its value, but the insurer caps how much you can lose in a crash.</p></div>
+      <div class="callout info"><span class="ttl">Pension-fund use</span> A fund exposed to equities buys a basket of puts to floor drawdowns. The cost is the premiums, so the job is to find the sweet spot between protection and the drag on returns.</div>
+    </div>
+
+    <!-- BINOMIAL -->
+    <div class="concept" id="binom">
+      <h2 class="section-h">Binomial tree pricing</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>Price an option by chopping time into steps where the price can only go up or down, building a fully-hedged portfolio at each node, and working <b>backwards</b> from maturity.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It is the most <b>intuitive</b> pricing method and the cleanest demonstration of the core idea: if you can hedge away all the risk, the option's price can't depend on the probability of going up — only on the no-arbitrage replication cost. It also handles American and exotic options where formulas fail.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Over one step the stock goes to \(S_0u\) or \(S_0d\) (with \(u=1/d\)); the option becomes \(f_u\) or \(f_d\). Build a portfolio: short the option, long \(\Delta\) shares. Choose \(\Delta\) so the portfolio is worth the same up or down — risk-free:</p>
+        <div class="formula">\[ S_0u\,\Delta - f_u = S_0d\,\Delta - f_d \;\Rightarrow\; \Delta=\frac{f_u-f_d}{S_0u-S_0d} \]</div>
+        <p>A risk-free portfolio must earn \(r\), which after algebra gives the price as a discounted expectation under the <b>risk-neutral probability</b> \(p\):</p>
+        <div class="formula">\[ f=e^{-rT}\big(p\,f_u+(1-p)\,f_d\big),\qquad p=\frac{e^{rT}-d}{u-d} \]</div>
+        <p>With volatility \(\sigma\) over step length \(T\), the standard calibration is \(u=e^{\sigma\sqrt{T}},\ d=e^{-\sigma\sqrt{T}}\).</p>
+        <details class="acc"><summary><span class="tag derive">Derivation</span> From the hedged portfolio to the formula for \(f\)</summary>
+          <div class="acc-body">
+            <p>Today the portfolio costs \(P=S_0\Delta - f\). Being risk-free it must equal the discounted certain value \(P=(S_0u\Delta-f_u)e^{-rT}\). Equate and substitute \(\Delta=\frac{f_u-f_d}{S_0(u-d)}\):</p>
+            <div class="formula tight">\[ f=S_0\Delta-(S_0u\Delta-f_u)e^{-rT}. \]</div>
+            <p>Collecting terms and writing \(p=\dfrac{e^{rT}-d}{u-d}\) yields \(f=e^{-rT}\!\big(pf_u+(1-p)f_d\big)\). Note \(p\) looks like a probability but is the <em>risk-neutral</em> one — it makes the stock grow at \(r\): \(e^{rT}=pu+(1-p)d\). \(\;\square\)</p>
+          </div>
+        </details>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Like pricing a bet by <b>building the opposite bet that exactly cancels it</b>. Once you can perfectly offset every outcome, your luck doesn't matter — the fair price is just what it costs to assemble the offset, grown at the risk-free rate.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>European call, \(K=\$21\), \(T=3\) months, \(S_0=\$20\), \(u=1.1\), \(d=0.909\), \(r=12\%\). Up: \(S=22\Rightarrow f_u=22-21=1\). Down: \(S=18.2\Rightarrow f_d=0\).</p>
+        <p>\(p=\dfrac{e^{0.12\cdot0.25}-0.909}{1.1-0.909}=\dfrac{1.0305-0.909}{0.191}=0.6357\).<br>
+        \(f=e^{-0.12\cdot0.25}(0.6357\cdot1+0.3643\cdot0)=\mathbf{\$0.62}\).<br>
+        Hedge ratio \(\Delta=\dfrac{1-0}{22-18.2}=\mathbf{0.262}\) shares per option written.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Binomial-tree probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why doesn't the real probability of an up-move appear in the price?</div><div class="a">Because we <b>hedged</b>. A delta-hedged portfolio has the same value in both states, so it's riskless and must earn \(r\). The price then depends only on \(u,d,r\) — not on how likely "up" really is. This is the heart of risk-neutral pricing.</div></div>
+          <div class="qa"><div class="q">What is \(p\), really?</div><div class="a">The risk-neutral (not real-world) probability: the value that makes the stock's expected growth equal the risk-free rate. It's a pricing device, not a forecast.</div></div>
+          <div class="qa follow"><div class="q">Why use many steps, and what's the cost?</div><div class="a">One step is too coarse. More steps converge to the true (Black–Scholes) price, but \(n\) steps imply up to \(2^n\) paths — 30 steps is a billion — so it gets expensive in time and memory. Recombining trees (\(u=1/d\)) tame this to \(O(n^2)\) nodes.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- BLACK SCHOLES -->
+    <div class="concept" id="bs">
+      <h2 class="section-h">Black–Scholes</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>A closed-form formula for the price of a European call or put, obtained by taking the binomial idea to a continuous-time limit where the stock follows a random walk (geometric Brownian motion).</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It turned option pricing from art into engineering (Nobel Prize, 1997) and gives instant prices and Greeks for vanilla options. Even where it's wrong (the volatility smile), it's the universal <em>language</em> — quotes are made in "implied vol".</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ c = S_0\,N(d_1) - Ke^{-rT}N(d_2),\qquad p = Ke^{-rT}N(-d_2) - S_0 N(-d_1) \]</div>
+        <div class="formula">\[ d_1=\frac{\ln(S_0/K)+\big(r+\tfrac{\sigma^2}{2}\big)T}{\sigma\sqrt T},\qquad d_2=d_1-\sigma\sqrt T \]</div>
+        <ul class="legend">
+          <li><span class="sym">N(x)</span> standard normal CDF — probability a standard normal is below \(x\).</li>
+          <li><span class="sym">N(d₂)</span> ≈ risk-neutral probability the call finishes in the money; <span class="sym">N(d₁)</span> is the call's Delta (hedge ratio).</li>
+          <li>Inputs are exactly the six variables from earlier: \(S_0,K,T,\sigma,r\) (no dividends here).</li>
+        </ul>
+        <div class="callout info"><span class="ttl">Assumptions (say these in the exam)</span> constant volatility \(\sigma\) and rate \(r\); log-normal prices / continuous paths (no jumps); frictionless markets (no costs, continuous hedging); European exercise. Each failed assumption is a doorway to a better model (Heston for stochastic vol, Merton for jumps, trees for early exercise).</div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-controls">
+          <div class="ctrl"><label>Volatility σ <span class="val" id="bs-sv">20%</span></label><input id="bs-s" type="range" min="5" max="60" value="20" step="1"></div>
+          <div class="ctrl"><label>Time to maturity T <span class="val" id="bs-tv">0.50y</span></label><input id="bs-t" type="range" min="2" max="200" value="50" step="2"></div>
+        </div>
+        <div id="ch-bs" class="chart tall"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> the Black–Scholes <b>call price vs spot</b> (purple), with strike \(K=\$50\), \(r=5\%\). It sits above the kinked payoff at expiry (grey) — the gap is <b>time value</b>. Raise σ or T and the smooth curve lifts; as \(T\to0\) it collapses onto the payoff. The dashed line is the lower bound \(S_0-Ke^{-rT}\).</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Black–Scholes is the <b>continuous-shutter-speed photo</b> of the binomial tree's flip-book. Same scene (hedge away risk, discount at \(r\)), but instead of discrete up/down jumps the price drifts and shakes continuously, and the two probabilities \(N(d_1),N(d_2)\) replace the tree's \(p\).</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>The binomial example above (\(S_0=20,K=21,...\)) priced the call at $0.62 with one crude step. Black–Scholes is the limit the tree converges to as you add steps — they meet. Use the chart: at \(S_0=K=50\), an ATM call with σ=20%, T=0.5 is worth a few dollars of pure time value.</p></div>
+      <details class="acc"><summary><span class="tag derive">Sanity check</span> Black–Scholes respects the bounds</summary>
+        <div class="acc-body">
+          <p><b>High vol:</b> as \(\sigma\to\infty\), \(d_1\to+\infty\Rightarrow N(d_1)\to1\) and \(d_2\to-\infty\Rightarrow N(d_2)\to0\), so \(c\to S_0\) — the upper bound.</p>
+          <div class="callout warn"><span class="ttl">Note / correction</span> The slide writes the low-vol limit as "\(\sigma\to0,\ d_1\to\infty,\ N(d_1)\to1,\ d_2\to\infty,\ N(d_2)\to1\Rightarrow c\ge S_0-Ke^{-rT}\)". That sign reasoning only holds when the call is in the money (\(S_0&gt;Ke^{-rT}\)). Correctly, as \(\sigma\to0\) the option loses all time value and \(c\to\max(S_0-Ke^{-rT},0)\): the intrinsic value. In the money it equals the lower bound; out of the money it goes to 0.</div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- SMILE -->
+    <div class="concept" id="smile">
+      <h2 class="section-h">The volatility smile</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p><b>Implied volatility</b> is the σ you must plug into Black–Scholes to match the market price. Plotted against strike, it bends into a "smile" instead of being flat.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>The smile is the market <em>telling you Black–Scholes is only a model</em>. If BS were exactly right, implied vol would be constant across all strikes and maturities. It isn't — so deep out-of-the-money options (crash protection) are priced richer, reflecting fat tails.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Real return distributions have <b>fatter tails</b> than the normal (and are skewed, especially in equities). Extreme moves are more likely than BS assumes, so the market pays up for far-from-the-money options — pushing their implied vol above the at-the-money level. The result is a smile (or a skew/smirk in equities, where downside puts are dearest).</p></div>
+      <div class="chart-card">
+        <div id="ch-smile" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> a stylised implied-vol smile. Black–Scholes predicts the flat dashed line; the market trades the curved solid line, with richer vols in the wings — evidence of fat tails and the model's limits.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>BS assumes the road is uniformly bumpy. The smile is drivers admitting the <b>edges of the road (extreme prices) are bumpier than the middle</b> — so they pay more to insure against ending up out there.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Smile / implied vol</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">What is implied volatility?</div><div class="a">The single volatility input that makes the Black–Scholes price equal the observed market price — found by inverting the formula numerically. It's the market's expectation of future vol, embedded in the option price.</div></div>
+          <div class="qa"><div class="q">If BS were correct, what would the smile look like?</div><div class="a">A flat horizontal line — implied vol independent of strike and maturity. The observed curvature is direct evidence that the constant-vol, log-normal assumption is violated.</div></div>
+          <div class="qa follow"><div class="q">Which models fix it?</div><div class="a">Stochastic-volatility models (Heston) let σ itself vary randomly; jump-diffusion (Merton) adds sudden jumps producing fat tails. Both generate smiles/skews endogenously.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "An option is the right (not duty) to trade at a fixed price; its payoff is a hockey-stick, its price is bounded by no-arbitrage, and calls and puts are tied by put–call parity. We price it by <b>hedging away the risk</b> — discretely with a binomial tree, or in continuous time with Black–Scholes — and the market's volatility smile reminds us BS is only a model."</div>
+
+    <div class="revise-bar">
+      <button class="btn primary" id="revise-btn" data-id="options"><span class="lbl">Mark this topic as revised</span></button>
+      <span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span>
+    </div>
+    <div class="page-nav" id="page-nav"></div>
+
+  </div></main>
+</div>
+<button id="to-top" aria-label="Back to top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+function nCDF(x){ // Abramowitz-Stegun
+  const t=1/(1+0.2316419*Math.abs(x));
+  const d=0.3989422804014327*Math.exp(-x*x/2);
+  let p=d*t*(0.319381530+t*(-0.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));
+  return x>0?1-p:p;
+}
+function bsCall(S,K,r,sig,T){
+  if(T<=0||sig<=0) return Math.max(S-K,0);
+  const d1=(Math.log(S/K)+(r+sig*sig/2)*T)/(sig*Math.sqrt(T));
+  const d2=d1-sig*Math.sqrt(T);
+  return S*nCDF(d1)-K*Math.exp(-r*T)*nCDF(d2);
+}
+function draw(){
+  const C=CF.colors();
+  // ---- payoff ----
+  const K=+document.getElementById('pf-k').value, prem=+document.getElementById('pf-p').value;
+  document.getElementById('pf-kv').textContent=K; document.getElementById('pf-pv').textContent=prem;
+  const S=[];for(let s=K-40;s<=K+40;s+=1)S.push(s);
+  const lc=S.map(s=>Math.max(s-K,0)-prem), sc=S.map(s=>prem-Math.max(s-K,0));
+  const lp=S.map(s=>Math.max(K-s,0)-prem), sp=S.map(s=>prem-Math.max(K-s,0));
+  Plotly.react('ch-payoff',[
+    {x:S,y:lc,name:'Long call',line:{color:C.accent,width:3}},
+    {x:S,y:sc,name:'Short call',line:{color:C.bad,width:2.5,dash:'dash'}},
+    {x:S,y:lp,name:'Long put',line:{color:C.good,width:3}},
+    {x:S,y:sp,name:'Short put',line:{color:C.warn,width:2.5,dash:'dot'}}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'Underlying price at maturity  S_T',gridcolor:C.grid,zeroline:false},yaxis:{title:'Profit',gridcolor:C.grid,zeroline:true,zerolinecolor:C.mute}}),CF.config);
+
+  // ---- protective put ----
+  const S0=50,Kp=50,pp=4;
+  const S2=[];for(let s=20;s<=85;s+=1)S2.push(s);
+  const stock=S2.map(s=>s-S0), put=S2.map(s=>Math.max(Kp-s,0)-pp), comb=S2.map((s,i)=>stock[i]+put[i]);
+  Plotly.react('ch-strat',[
+    {x:S2,y:comb,name:'Stock + Put (protective)',line:{color:C.accent,width:3.5}},
+    {x:S2,y:stock,name:'Stock only',line:{color:C.mute,width:1.6,dash:'dot'}},
+    {x:S2,y:put,name:'Put only',line:{color:C.good,width:1.6,dash:'dash'}}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'Underlying price  S_T',gridcolor:C.grid},yaxis:{title:'Profit',gridcolor:C.grid,zeroline:true,zerolinecolor:C.mute}}),CF.config);
+
+  // ---- BS price vs spot ----
+  const sig=(+document.getElementById('bs-s').value)/100, T=(+document.getElementById('bs-t').value)/100;
+  document.getElementById('bs-sv').textContent=Math.round(sig*100)+'%';
+  document.getElementById('bs-tv').textContent=T.toFixed(2)+'y';
+  const Kb=50,rb=0.05;
+  const Sb=[];for(let s=20;s<=85;s+=1)Sb.push(s);
+  const price=Sb.map(s=>bsCall(s,Kb,rb,sig,T));
+  const payoff=Sb.map(s=>Math.max(s-Kb,0));
+  const lower=Sb.map(s=>Math.max(s-Kb*Math.exp(-rb*T),0));
+  Plotly.react('ch-bs',[
+    {x:Sb,y:price,name:'Black–Scholes call price',line:{color:C.how,width:3.5}},
+    {x:Sb,y:payoff,name:'Payoff at expiry  max(S−K,0)',line:{color:C.mute,width:2}},
+    {x:Sb,y:lower,name:'Lower bound  S−Ke^{−rT}',line:{color:C.bad,width:1.5,dash:'dash'}}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'Spot price  S₀',gridcolor:C.grid},yaxis:{title:'Call value',gridcolor:C.grid,rangemode:'tozero'}}),CF.config);
+
+  // ---- smile ----
+  const strikes=[];for(let k=30;k<=70;k+=1)strikes.push(k);
+  const atm=50, smile=strikes.map(k=>0.20+0.0009*Math.pow(k-atm,2)/ (1+0.02*Math.abs(k-atm)) - 0.0018*(k-atm));
+  Plotly.react('ch-smile',[
+    {x:strikes,y:smile.map(v=>v*100),name:'Market implied vol (smile/skew)',line:{color:C.accent,width:3.5}},
+    {x:strikes,y:strikes.map(()=>20),name:'Black–Scholes assumption (flat)',line:{color:C.mute,width:2,dash:'dash'}}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'Strike  K',gridcolor:C.grid},yaxis:{title:'Implied volatility (%)',gridcolor:C.grid}}),CF.config);
+}
+['pf-k','pf-p','bs-s','bs-t'].forEach(id=>document.getElementById(id).addEventListener('input',draw));
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

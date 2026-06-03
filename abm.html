@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent-Based Models — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar"><button class="icon-btn" id="menu-btn"><span class="menu-ic"></span></button><strong style="font-size:15px">Agent-Based Models</strong><button class="icon-btn" data-theme-toggle style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button></div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 8 · Markets & Microstructure</div>
+    <h1 class="page-title">Agent-Based Models</h1>
+    <p class="page-lede">Instead of writing one equation for the market, you simulate many simple traders and watch realistic complexity emerge from the bottom up.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#intro">Top-down vs bottom-up</a></li>
+      <li><a href="#cb">Cont-Bouchaud (herding)</a></li>
+      <li><a href="#lux">Lux-Marchesi</a></li>
+      <li><a href="#mg">The Minority Game</a></li>
+    </ul></div>
+
+    <div class="concept" id="intro">
+      <h2 class="section-h">Top-down vs bottom-up</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>Agent-Based Models (ABMs) build a market from many interacting "agents" following simple rules, rather than describing the market with one global equation.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>Markets are the <em>result</em> of interactions, not a tidy formula. ABMs explain where the stylised facts (fat tails, volatility clustering) <em>come from</em> — emergent behaviour you can't get from a top-down equation.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul><li><b>Top-down:</b> write the equation of the dynamics directly (e.g. an SDE).</li>
+        <li><b>Bottom-up (ABM):</b> specify simple agent rules; run the simulation; complex macro behaviour <em>emerges</em>.</li></ul>
+        <p>Classic intuition pump: simple car-following rules reproduce real traffic jams — micro simplicity → macro complexity.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>A flock of birds has no leader and no flock-equation — just each bird following 3 rules about its neighbours. The mesmerising murmuration <b>emerges</b>. ABMs do the same for markets.</p></div>
+    </div>
+
+    <div class="concept" id="cb">
+      <h2 class="section-h">Cont-Bouchaud — herding</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Agents form <b>random clusters</b> that act together. Each cluster buys with probability \(a\), sells with prob. \(a\), or does nothing with prob. \(1-2a\) (with \(a\le0.5\)).</p>
+        <ul>
+          <li>\(a=0.5\) (no inactivity) → <b>Gaussian</b> returns.</li>
+          <li>\(a\ll0.5\) (lots of coordinated inaction, strong clustering) → <b>fat-tailed</b> returns.</li>
+        </ul>
+        <p>So a single herding parameter dials between normal and fat-tailed markets — herding <em>creates</em> the fat tails.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Like a <b>crowd in a stadium</b>: when people act independently, the noise is mild and Gaussian. When they coordinate (a chant, a wave), you get sudden huge surges — fat tails.</p></div>
+    </div>
+
+    <div class="concept" id="lux">
+      <h2 class="section-h">Lux-Marchesi — fundamentalists vs chartists</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Two types of agent, who can <b>switch type</b>:</p>
+        <ul>
+          <li><b>Fundamentalists:</b> compare price to a "true" value — buy if too cheap, sell if too dear.</li>
+          <li><b>Chartists:</b> follow price action and neighbours — optimists chase trends, pessimists fade them.</li>
+        </ul>
+        <p>The interplay (and switching) reproduces fat-tailed return distributions and is somewhat at odds with EMH (price doesn't just reflect news). It captures booms/busts as chartists pile into trends until fundamentalists pull price back.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>A housing market with <b>value-investors</b> ("this is overpriced, I'll sell") and <b>momentum-buyers</b> ("prices keep rising, get in!"). When everyone flips to momentum, you get a bubble; fundamentalists eventually burst it.</p></div>
+    </div>
+
+    <div class="concept" id="mg">
+      <h2 class="section-h">The Minority Game</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>A model (Challet-Zhang, Fribourg) where many agents repeatedly choose one of two sides, and the <b>minority side wins</b> — capturing the self-defeating nature of crowded trades.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>It's analytically tractable <em>and</em> reproduces real features (herding, realistic return distributions). It formalises why "if everyone buys, there's no one left to buy from" — the loser is the crowd.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Inspired by the <b>El Farol Bar problem</b>: \(N\) people decide independently whether to go to a bar that's only fun if &lt;60% attend. Globally you want exactly 60% — but everyone reasoning the same way causes over/under-shooting.</p>
+        <p>In the MG: \(N\) (odd) agents, a history \(\mu(t)\) of \(M\) bits, \(S\) strategies each (there are \(2^{2^M}\) possible strategies — explodes fast). Each step agents act \(a_i=\pm1\); attendance \(A=\sum a_i\); strategies that predicted the minority are rewarded. A control parameter \(\alpha=2^M/N\) governs the phases.</p>
+        <details class="acc"><summary><span class="tag derive">Result</span> Fluctuations of attendance</summary>
+          <div class="acc-body">
+            <p>If agents were random and independent: \(E[a_i]=0\), \(\mathrm{Var}(a_i)=1\), and with zero covariance \(\mathrm{Var}(A)=N\). The interesting physics is the <em>departure</em> from this: below a critical \(\alpha_c\approx0.337\) (for \(S=2\)) the system is in a symmetric, crowded phase (worse than random — herding); above it, an asymmetric phase where the history becomes predictable. A "master curve" of volatility vs \(\alpha\) appears for various \(N\).</p>
+          </div>
+        </details>
+        <p>Linked to markets via \(r(t)=\ln\frac{P(t)}{P(t-1)}=A(t)/\lambda\), i.e. \(P(t)=P(t-1)e^{A(t)/\gamma}\). Add contrarians/trend-followers and it reproduces return-distribution features.</p>
+      </div>
+      <div class="chart-card">
+        <div id="ch-mg" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> a stylised Minority-Game volatility-of-attendance vs the control parameter α = 2ᴹ/N. There's a critical point α_c ≈ 0.337: to its left, crowding makes fluctuations <em>worse</em> than random (herding); near α_c is the optimal, lowest-volatility zone.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>It's the <b>"pick the less crowded checkout lane"</b> game played by everyone at once. If you all use the same logic, you all switch to the same lane and lose. Winning means being in the minority — which is exactly why crowded trades fail.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> ABM probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">What do agent-based models add over top-down equations?</div><div class="a">They explain <em>emergence</em>: simple heterogeneous agents reproduce stylised facts (fat tails, volatility clustering) from the bottom up, rather than assuming them in an equation.</div></div>
+          <div class="qa"><div class="q">In one line, each of the three models?</div><div class="a">Cont-Bouchaud: random clusters → herding produces fat tails. Lux-Marchesi: fundamentalists vs switching chartists → bubbles & fat tails. Minority Game: minority-wins game → why crowded trades lose, with a phase transition at α_c.</div></div>
+          <div class="qa"><div class="q">What's the El Farol connection?</div><div class="a">The bar is fun only if under-attended; everyone deciding simultaneously with similar logic over/under-shoots the 60% target. The Minority Game abstracts this into "be on the minority side to win" — a market metaphor.</div></div>
+          <div class="qa follow"><div class="q">Why is the Minority Game prized?</div><div class="a">It's one of the few ABMs yielding <em>analytical</em> results (phase transition at α_c, master curves), while still generating realistic market statistics — and it has spawned many variants.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "Agent-based models build markets bottom-up from simple traders, so stylised facts <em>emerge</em>. Cont-Bouchaud gets fat tails from herding clusters; Lux-Marchesi from fundamentalists vs chartists; and the analytically-tractable <b>Minority Game</b> (minority wins) explains why crowded trades self-destruct, with a phase transition at α_c ≈ 0.337."</div>
+
+    <div class="revise-bar"><button class="btn primary" id="revise-btn" data-id="abm"><span class="lbl">Mark this topic as revised</span></button><span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span></div>
+    <div class="page-nav" id="page-nav"></div>
+  </div></main>
+</div>
+<button id="to-top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+function draw(){
+  const C=CF.colors();
+  const al=[],sig=[];
+  for(let x=-1.2;x<=1.2;x+=0.05){const a=Math.pow(10,x);al.push(a);
+    // stylised volatility curve: high at small alpha (herding), dip near alpha_c, rise to random level
+    const v=0.5/a + 0.5*Math.max(0,a-0.337)+1; sig.push(v);}
+  Plotly.react('ch-mg',[
+    {x:al,y:sig,mode:'lines',name:'σ²/N (volatility of attendance)',line:{color:C.accent,width:3.5}},
+    {x:[0.337,0.337],y:[0,Math.max(...sig)],mode:'lines',name:'α_c ≈ 0.337',line:{color:C.bad,width:2,dash:'dash'}}
+  ],CF.layout({hovermode:'closest',xaxis:{title:'Control parameter α = 2ᴹ/N (log scale)',type:'log',gridcolor:C.grid},yaxis:{title:'Volatility of attendance (arb. units)',gridcolor:C.grid,rangemode:'tozero'}}),CF.config);
+}
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

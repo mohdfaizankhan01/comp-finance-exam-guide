@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bonds — Basics — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar">
+  <button class="icon-btn" id="menu-btn" aria-label="Menu"><span class="menu-ic"></span></button>
+  <strong style="font-size:15px">Bonds — Basics</strong>
+  <button class="icon-btn" data-theme-toggle aria-label="Toggle theme" style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 11 · Fixed Income</div>
+    <h1 class="page-title">Bonds — Basics</h1>
+    <p class="page-lede">A bond is a loan with a fixed schedule. Its price is just the present value of that schedule — and price moves inversely to yield.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#what">What a bond is</a></li>
+      <li><a href="#val">Valuation (discounting cash flows)</a></li>
+      <li><a href="#yield">Yield & the price–yield relationship</a></li>
+      <li><a href="#zero">Zero-coupon yield & comparison</a></li>
+      <li><a href="#boot">Bootstrap algorithm</a></li>
+      <li><a href="#types">Types, ratings & credit spread</a></li>
+      <li><a href="#risks">Risks & role in a portfolio</a></li>
+    </ul></div>
+
+    <div class="concept" id="what">
+      <h2 class="section-h">What a bond is</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>A bond is an IOU: the issuer borrows money now, pays periodic <em>coupons</em>, and returns the <em>principal</em> (face value) at maturity, all on a fixed, contractual schedule.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Bonds are how governments and companies fund themselves, and they're the bedrock of portfolios (income, safety, diversification). Their pricing is the purest application of the time value of money, and the "risk-free rate" used everywhere in finance comes from government bonds.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>The <em>structure</em> (coupons, dates, principal) is fixed for life. What floats is the <b>price</b> \(B(t)\), which is the market's verdict on the bond, driven by the <b>yield</b> investors demand — itself a function of the issuer's risk of default (<b>credit risk</b>).</p></div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>A bond is a <b>fixed set of dated cheques</b>. The cheques never change. But how much someone will pay you <em>today</em> for that stack of future cheques changes with interest rates and how much they trust the cheque-writer.</p></div>
+    </div>
+
+    <div class="concept" id="val">
+      <h2 class="section-h">Valuation — discount every cash flow</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The fair price is the sum of every future coupon and the principal, each discounted back to today at the required yield.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It makes "what is this loan worth?" a precise calculation, and it's the formula from which duration, convexity and the whole yield curve follow.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ B(t)=\sum_{i=1}^{n} c_i\,e^{-y\,(t_i-t)} + P\,e^{-y\,(T-t)} \]</div>
+        <ul class="legend">
+          <li><span class="sym">c_i</span> coupon at time \(t_i\) · <span class="sym">P</span> principal (face value) repaid at maturity \(T\)</li>
+          <li><span class="sym">y</span> the required yield (continuous compounding here) · the exponential is the discount factor.</li>
+        </ul>
+        <p>A bond trading <b>above</b> 100 (par) is at a <em>premium</em>; <b>at</b> 100 is at par; <b>below</b> is at a <em>discount</em>.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Pricing a bond is <b>weighing each future cheque on a "time scale" that shrinks far-off money</b>, then adding the shrunken amounts. The further away a cheque, the less it weighs today.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Coupon \(c=5\), paid twice a year for 2 years, principal 100, required yield \(y=5\%\):</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th class="num">Time (y)</th><th>Cash flow</th><th>Discount</th><th class="num">PV</th></tr></thead>
+          <tbody>
+            <tr><td class="num">0.5</td><td>5</td><td><code>5·e^{-0.05·0.5}</code></td><td class="num">4.88</td></tr>
+            <tr><td class="num">1.0</td><td>5</td><td><code>5·e^{-0.05·1}</code></td><td class="num">4.76</td></tr>
+            <tr><td class="num">1.5</td><td>5</td><td><code>5·e^{-0.05·1.5}</code></td><td class="num">4.64</td></tr>
+            <tr><td class="num">2.0</td><td>5</td><td><code>5·e^{-0.05·2}</code></td><td class="num">4.52</td></tr>
+            <tr><td class="num">2.0</td><td>100 (principal)</td><td><code>100·e^{-0.05·2}</code></td><td class="num">90.48</td></tr>
+          </tbody>
+        </table></div>
+        <p>\(B=4.88+4.76+4.64+4.52+90.48=\mathbf{109.28}\) → selling at a <b>premium</b> (its 10% annual coupon beats the 5% yield).</p></div>
+    </div>
+
+    <div class="concept" id="yield">
+      <h2 class="section-h">Yield & the price–yield relationship</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The yield is the single discount rate that makes the bond's discounted cash flows equal its market price — the bond's internal rate of return.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It's the standard "interest rate" of a bond, and the key fact — <b>price and yield move in opposite directions</b> — explains why rising rates hurt bondholders. This inverse, curved relationship is the seed of duration and convexity.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Given a market price \(B(t)\), you can't solve for \(y\) in closed form (it's inside several exponentials), so you use a <b>trial-and-error / numerical root-find</b>: guess \(y\), compute \(B\), adjust until it matches. As \(y\) rises, every discount factor \(e^{-y\cdot t}\) shrinks, so \(B\) falls — and the curve is convex (bends), not a straight line.</p>
+      </div>
+      <div class="chart-card">
+        <div id="ch-py" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> price vs yield for the 2-year bond above. It slopes <b>down</b> (higher yield ⇒ lower price) and is <b>convex</b> (curved) — the curvature is exactly what duration approximates and convexity corrects (next lecture). The dot marks par-yield.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Yield and price are a <b>see-saw</b>. If newly-issued bonds suddenly pay more (yields up), your old lower-paying bond looks worse, so its price must drop to stay competitive — and vice versa.</p></div>
+      <div class="callout bad"><span class="ttl">Don't say this</span> "If interest rates rise my bond is worth more because it earns more." Your old bond's coupons are fixed — rising rates make it <em>less</em> attractive, so its price falls.</div>
+    </div>
+
+    <div class="concept" id="zero">
+      <h2 class="section-h">Zero-coupon yield — a common yardstick</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The yield on a bond that pays <em>no</em> coupons — just one lump at maturity. It depends only on maturity, so it's the clean standard for comparing rates.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Two coupon bonds with different schedules have yields that aren't directly comparable. Strip out the coupons and you get the <b>zero-coupon (spot) yield curve</b> — the fundamental object used to discount <em>any</em> cash flow at the right rate for its date.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>In theory the curve rises smoothly with maturity (longer = more risk/uncertainty → higher rate). In practice it can be humped, flat or inverted. Since not all zero-coupon bonds trade, we <em>construct</em> the curve from coupon bonds via the bootstrap.</p></div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Zero-coupon yields are like quoting every product as a <b>price-per-100g</b>: only once you standardise can you compare a small jar to a big one fairly.</p></div>
+    </div>
+
+    <div class="concept" id="boot">
+      <h2 class="section-h">Bootstrap algorithm</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>A step-by-step way to peel out zero-coupon rates from the prices of real, coupon-paying bonds, starting at the shortest maturity and working outward.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It's how the discount curve everyone uses is actually built from market data. The trick — using already-known short rates to discount the early coupons of a longer bond — is elegant and very examinable.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>For each bond, in increasing maturity, all earlier cash flows are discounted with rates you've <em>already</em> bootstrapped, leaving the new maturity's rate as the only unknown — then solve for it. Convert quoted rates to continuous compounding as you go.</p>
+        <details class="acc"><summary><span class="tag derive">Worked bootstrap</span> Treasury data → zero curve</summary>
+          <div class="acc-body">
+            <p>Short zeros first. A 3-month bill priced 97.5 (principal 100): quarterly growth \(4\times2.5/97.5=10.256\%\); annualise to continuous: \(r_{0.25}=4\ln(1+0.10256/4)=\mathbf{10.127\%}\). Similarly \(r_{0.5}=10.469\%\), \(r_{1.0}=\ln(1+10/90)=10.536\%\).</p>
+            <p>Now the 1.5-year, 8% coupon bond (semi-annual → $4) priced 96. Coupons at 0.5 and 1.0 use known rates; only \(r_{1.5}\) is unknown:</p>
+            <div class="formula tight">\[ 4e^{-0.10469\cdot0.5}+4e^{-0.10536\cdot1}+104\,e^{-r_{1.5}\cdot1.5}=96 \]</div>
+            <p>Solve: \(e^{-1.5 r_{1.5}}=0.85196\Rightarrow r_{1.5}=\mathbf{10.681\%}\). Repeat for the 2-year bond → \(r_{2.0}=10.808\%\).</p>
+            <div class="tbl-wrap"><table><thead><tr><th class="num">Maturity</th><th class="num">Zero rate</th></tr></thead><tbody>
+              <tr><td class="num">0.25</td><td class="num">10.127%</td></tr><tr><td class="num">0.50</td><td class="num">10.469%</td></tr><tr><td class="num">1.0</td><td class="num">10.536%</td></tr><tr><td class="num">1.5</td><td class="num">10.681%</td></tr><tr><td class="num">2.0</td><td class="num">10.808%</td></tr>
+            </tbody></table></div>
+          </div>
+        </details>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Like <b>solving a sudoku in order</b>: each new cell (maturity) has exactly one unknown left once you've filled the earlier ones, so you can always solve it before moving on.</p></div>
+    </div>
+
+    <div class="concept" id="types">
+      <h2 class="section-h">Types, ratings & credit spread</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Government (sovereign / "Govies" / Treasuries)</b> vs <b>corporate</b> bonds.</li>
+          <li>The extra yield a corporate pays over the matching government bond is the <b>credit spread</b>: bond yield = sovereign yield + credit spread.</li>
+          <li><b>Rating agencies</b> grade default risk: S&P AAA→D, Moody's Aaa→C. Lower rating ⇒ higher yield demanded. Ratings can change mid-life, widening or narrowing the spread.</li>
+          <li>Central banks usually carry the best (≈AAA) rating for their country; corporates are rated on activity and balance sheet. Ratings <em>don't</em> include ESG factors.</li>
+        </ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>The credit spread is the <b>"risky-borrower surcharge"</b> on a loan: a friend with a shaky job must promise you a higher interest rate than the government would, to compensate for the chance they don't pay you back.</p></div>
+    </div>
+
+    <div class="concept" id="risks">
+      <h2 class="section-h">Risks & role in a portfolio</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Interest-rate risk:</b> rates up ⇒ price down. Longer-duration bonds are more sensitive (next lecture).</li>
+          <li><b>Credit risk:</b> the issuer may default; rated by agencies; compensated by yield spread.</li>
+          <li><b>Inflation risk:</b> inflation erodes real returns (real ≈ nominal − inflation); TIPS / inflation-linked bonds protect against it.</li>
+          <li><b>Liquidity risk:</b> you may not sell quickly at fair value.</li>
+          <li><b>Reinvestment risk:</b> coupons/principal may have to be reinvested at lower rates — acute for <em>callable</em> bonds, which issuers redeem early when rates fall.</li>
+        </ul>
+        <p><b>Role in a portfolio:</b> income, capital preservation, and <em>diversification</em> — bonds often have low/negative correlation with equities (so they cushion equity drawdowns). Caveat: in 2022 rates spiked and stock–bond correlation turned positive, so both fell together.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Bonds are the <b>ballast in a portfolio's ship</b> — steady, less exciting, usually keeping you upright when equities lurch. But ballast that shifts (rising rates) can occasionally rock the boat too.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Bonds basics probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why does a bond's price fall when yields rise?</div><div class="a">The cash flows are fixed; discounting them at a higher rate shrinks every present value, so the sum (the price) drops. Equivalently, your fixed coupon is now uncompetitive versus new higher-coupon bonds.</div></div>
+          <div class="qa"><div class="q">What is the bootstrap doing, in one sentence?</div><div class="a">Extracting pure zero-coupon (spot) rates from coupon-bond prices, one maturity at a time, by discounting earlier coupons with already-solved rates so each step has a single unknown.</div></div>
+          <div class="qa"><div class="q">What's the credit spread and what moves it?</div><div class="a">The yield premium over the matching sovereign bond, compensating for default risk; it widens on downgrades, recessions, or rising default fears, and narrows when credit conditions improve.</div></div>
+          <div class="qa follow"><div class="q">Are government bonds truly risk-free?</div><div class="a">Approximately — there's a small but nonzero chance a central bank/government defaults, usually treated as ≈0 for major sovereigns in their own currency. They're the practical proxy for the "risk-free rate".</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "A bond is a fixed schedule of cash flows; its price is their present value, so price and yield move inversely along a convex curve. We standardise rates via the zero-coupon curve, build it by bootstrapping coupon bonds, add a credit spread for default risk, and hold bonds for income, safety and diversification."</div>
+
+    <div class="revise-bar">
+      <button class="btn primary" id="revise-btn" data-id="bonds"><span class="lbl">Mark this topic as revised</span></button>
+      <span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span>
+    </div>
+    <div class="page-nav" id="page-nav"></div>
+
+  </div></main>
+</div>
+<button id="to-top" aria-label="Back to top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+function bondPrice(y){ // 2y, 5 semiannual coupons + principal 100, 10% annual coupon=5 semiannual
+  const cf=[[0.5,5],[1,5],[1.5,5],[2,5],[2,100]];
+  return cf.reduce((s,[t,c])=>s+c*Math.exp(-y*t),0);
+}
+function draw(){
+  const C=CF.colors();
+  const ys=[],ps=[];
+  for(let y=0.0;y<=0.20;y+=0.005){ys.push(y*100);ps.push(bondPrice(y));}
+  Plotly.react('ch-py',[
+    {x:ys,y:ps,name:'Bond price',line:{color:C.accent,width:3.5}},
+    {x:[5],y:[bondPrice(0.05)],mode:'markers',name:'y = 5% (premium, 109.28)',marker:{color:C.bad,size:10}}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'Yield  y (%)',gridcolor:C.grid},yaxis:{title:'Price  B',gridcolor:C.grid}}),CF.config);
+}
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

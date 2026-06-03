@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Construction (MPT) — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar">
+  <button class="icon-btn" id="menu-btn" aria-label="Menu"><span class="menu-ic"></span></button>
+  <strong style="font-size:15px">Portfolio Construction</strong>
+  <button class="icon-btn" data-theme-toggle aria-label="Toggle theme" style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 7 · Portfolio</div>
+    <h1 class="page-title">Portfolio Construction (MPT)</h1>
+    <p class="page-lede">Markowitz's big idea: by combining imperfectly-correlated assets you can cut risk without sacrificing return. The maths turns "diversification" into an optimisation.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#intro">Why build portfolios</a></li>
+      <li><a href="#ret">Expected return & variance</a></li>
+      <li><a href="#corr">Correlation — the engine</a></li>
+      <li><a href="#two">Two-asset portfolio</a></li>
+      <li><a href="#frontier">The efficient frontier</a></li>
+      <li><a href="#solve">Computing it</a></li>
+      <li><a href="#cml">Risk-free asset & the CML</a></li>
+    </ul></div>
+
+    <div class="concept" id="intro">
+      <h2 class="section-h">Why build portfolios</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>A portfolio is a collection of assets. Modern Portfolio Theory (Markowitz, 1952) says the right way to choose weights is to trade off expected <em>return</em> against <em>risk</em> (variance), exploiting how assets move together.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It's the foundational framework of asset management (Nobel Prize, 1990). It made risk a quantity you <em>engineer</em>, not just endure — and "don't put all your eggs in one basket" became a precise, optimisable statement.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Robustness comes from <b>diversification</b>: pick assets of different nature so that one's bad day is offset by another's good day, while you keep the returns of both. "Robust" can mean max return/risk (Sharpe ratio), min drawdown, or fast recovery, depending on the investor.</p></div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Selling <b>both sunscreen and umbrellas</b>. Each alone is seasonal and volatile; together, rain or shine, your revenue is steadier — without lowering your average. That smoothing <em>is</em> diversification.</p></div>
+    </div>
+
+    <div class="concept" id="ret">
+      <h2 class="section-h">Expected return & variance of a portfolio</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>With weights \(w_i\) (summing to 1), the portfolio return is the weighted sum, and its expectation is linear:</p>
+        <div class="formula">\[ R_p=\sum_i w_i R_i,\qquad E[R_p]=\sum_i w_i\,E[R_i] \]</div>
+        <p>But the <b>variance is not</b> a simple weighted sum — cross terms (covariances) appear:</p>
+        <div class="formula">\[ \mathrm{Var}(R_p)=\sigma_p^2=\sum_i\sum_j w_i w_j\,\mathrm{Cov}(R_i,R_j)=\mathbf{w}^{\mathsf T}\mathbf{C}\,\mathbf{w} \]</div>
+        <ul class="legend"><li><span class="sym">C</span> covariance matrix (\(C_{ii}=\sigma_i^2\)) · <span class="sym">w</span> weight vector. The covariances are what diversification acts on.</li></ul>
+        <details class="acc"><summary><span class="tag derive">Derivation</span> The \(N=2\) variance expanded</summary>
+          <div class="acc-body">
+            <p>Using \(\mathrm{Var}(aX+bY)=a^2\mathrm{Var}X+b^2\mathrm{Var}Y+2ab\,\mathrm{Cov}(X,Y)\):</p>
+            <div class="formula tight">\[ \sigma_p^2=w_1^2\sigma_1^2+w_2^2\sigma_2^2+2w_1w_2\,\rho_{12}\sigma_1\sigma_2, \]</div>
+            <p>since \(\mathrm{Cov}(R_1,R_2)=\rho_{12}\sigma_1\sigma_2\). The cross term is negative when \(\rho_{12}&lt;0\) — that's risk reduction in algebra.</p>
+          </div>
+        </details>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Returns average like <b>mixing paint</b> (predictable blend). Risk is trickier: two equally "shaky" assets can combine into something <em>calmer</em> than either, if their shakes tend to cancel.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Two assets, \(\sigma_1=\sigma_2=0.10\), \(w_1=w_2=0.5\). If \(\rho_{12}=0\): \(\sigma_p=\sqrt{0.25\cdot0.01+0.25\cdot0.01}= \sqrt{0.005}=0.0707\) — already below 0.10 with the <em>same</em> expected return. Free risk reduction.</p></div>
+    </div>
+
+    <div class="concept" id="corr">
+      <h2 class="section-h">Correlation — the engine of diversification</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ \rho_{ij}=\frac{\mathrm{Cov}(R_i,R_j)}{\sigma_i\sigma_j}\in[-1,1] \]</div>
+        <p>For two equal-risk, equal-weight assets the portfolio volatility depends entirely on \(\rho\):</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th class="num">ρ₁₂</th><th class="num">σ_p</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td class="num">+1</td><td class="num">0.100</td><td>no benefit — assets move identically</td></tr>
+            <tr><td class="num">+0.5</td><td class="num">0.087</td><td>some smoothing</td></tr>
+            <tr><td class="num">0</td><td class="num">0.071</td><td>independent — meaningful reduction</td></tr>
+            <tr><td class="num">−0.5</td><td class="num">0.050</td><td>strong offset</td></tr>
+            <tr><td class="num">−1</td><td class="num">0.000</td><td>risk fully cancelled (rare!)</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="chart-card">
+        <div id="ch-corr" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> mixing two assets (1 and 2) at every weight, for different correlations. Lower ρ bows the curve further <b>left</b> (less risk for the same return). At ρ = −1 you can engineer zero risk; at ρ = +1 the curve is a straight line — no diversification.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Correlation is "<b>do these two dancers step in sync?</b>" If they move oppositely (ρ &lt; 0), their wobbles cancel and the pair looks steady. If they're perfectly in sync (ρ = +1), the pair is just as wobbly as one dancer.</p></div>
+      <div class="callout warn"><span class="ttl">Note / real-world caveat</span> Correlations are <em>not</em> stable — they tend to spike toward +1 in crises (exactly when you need diversification most). 2022 saw stocks and bonds fall together. Quote this to show practical awareness.</div>
+    </div>
+
+    <div class="concept" id="two">
+      <h2 class="section-h">Two-asset portfolio</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>When the two assets differ in risk/return, varying the weights traces a curve from asset 1 to asset 2 through intermediate blends. Even with \(\rho=-1\), if the risks differ the portfolio risk doesn't hit exactly zero (the perfect cancellation needs matched volatilities). Sweeping all weights and all pairs builds the full opportunity set.</p>
+      </div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>\(E[R_1]=0.10,\sigma_1=0.07\); \(E[R_2]=0.20,\sigma_2=0.10\); equal weights → \(E[R_p]=0.15\). With \(\rho=0\), \(\sigma_p=\sqrt{0.5^2(0.07^2)+0.5^2(0.10^2)}=0.061\) — lower than either weighted-average intuition would suggest.</p></div>
+    </div>
+
+    <div class="concept" id="frontier">
+      <h2 class="section-h">The efficient frontier</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The set of portfolios that give the <b>maximum expected return for each level of risk</b> — the upper-left boundary of all achievable risk/return combinations.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It's the menu of <em>rational</em> choices. Any portfolio below the frontier is dominated — you could get more return for the same risk, or less risk for the same return. Investors should only ever hold frontier portfolios.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Plot every achievable portfolio in (risk, return) space — you get a cloud bounded by a bullet-shaped envelope. The top edge is the efficient frontier. Of two portfolios A and C at the same return, the lower-risk one (A) wins; of B and C at the same risk, the higher-return one (B) wins.</p>
+      </div>
+      <div class="chart-card">
+        <div id="ch-frontier" class="chart tall"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> a Monte-Carlo cloud of thousands of random 4-asset portfolios. The points that hug the <b>top-left edge</b> form the efficient frontier (highlighted) — best return per unit of risk. Everything inside is dominated.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>The frontier is the <b>"best deals" line in a car showroom</b>: for each budget (risk), it's the most car (return) you can get. Anything off the line is overpaying.</p></div>
+    </div>
+
+    <div class="concept" id="solve">
+      <h2 class="section-h">Computing the frontier</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Monte Carlo (brute force):</b> draw random weights summing to 1, plot each portfolio. Simple but slow and inefficient — needs millions of draws to map the high-risk edge as assets grow.</li>
+          <li><b>Closed-form (Lagrange):</b> minimising \(\mathbf{w}^{\mathsf T}\mathbf{C}\mathbf{w}\) subject to \(\sum w_i=1\) gives an exact analytic solution via \(\mathbf{w}=\mathbf{C}^{-1}(\lambda_1\mathbf{1}+\lambda_2\boldsymbol\mu)\). Elegant, but only enforces the budget constraint (allows shorts/leverage).</li>
+          <li><b>Numerical optimiser (the practical way):</b> solve \(\min_{\mathbf w}\ \mathbf{w}^{\mathsf T}\mathbf{C}\mathbf{w}-q\,\mathbf{w}^{\mathsf T}\boldsymbol\mu\) with \(\mathbf{1}^{\mathsf T}\mathbf{w}=1\) and bounds \(0\le w\le 1\); sweep the risk-appetite \(q\in[0,\infty)\) to trace the frontier. Handles real-world constraints (caps, no-shorting) easily.</li>
+        </ul>
+        <p class="legend">Estimating expected returns is "more art than science" and dominates the result; covariances are usually estimated from history (need at least ~\(N^2/2\) data points to be meaningful). Adding constraints lowers the frontier (you give up some efficiency for realism).</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Monte Carlo is <b>throwing darts and keeping the best</b>; the optimiser is <b>aiming deliberately</b>. Same target, but aiming wins once the dartboard (number of assets) gets big.</p></div>
+      <div class="callout bad"><span class="ttl">Don't say this</span> "MPT gives the optimal portfolio." It gives the optimal portfolio <em>given your inputs</em> — and the expected-return inputs are guesses. Garbage in, garbage out. Mention input sensitivity.</div>
+    </div>
+
+    <div class="concept" id="cml">
+      <h2 class="section-h">Risk-free asset & the Capital Market Line</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Add a risk-free asset (a short-term sovereign bond: small return \(r\), ≈ zero risk, ≈ zero correlation). Combining it with a risky portfolio \(P_0\) gives:</p>
+        <div class="formula">\[ E[R_{P_1}]=w_{rf}\,r+(1-w_{rf})E[R_{P_0}],\qquad \sigma_{P_1}=(1-w_{rf})\,\sigma_{P_0} \]</div>
+        <details class="acc"><summary><span class="tag derive">Derivation</span> Why the risk is just \((1-w_{rf})\sigma_{P_0}\)</summary>
+          <div class="acc-body">
+            <p>The risk-free asset has \(\sigma_{rf}=0\) and \(\rho_{rf,P_0}=0\). Plug into the two-asset variance:</p>
+            <div class="formula tight">\[ \sigma_{P_1}^2=w_{rf}^2\cdot0+(1-w_{rf})^2\sigma_{P_0}^2+2w_{rf}(1-w_{rf})\cdot0\cdot\sigma_{rf}\sigma_{P_0}=(1-w_{rf})^2\sigma_{P_0}^2. \]</div>
+            <p>Take the square root → \(\sigma_{P_1}=(1-w_{rf})\sigma_{P_0}\). Both return and risk are now <em>linear</em> in \(w_{rf}\) — a straight line in (risk, return) space. \(\;\square\)</p>
+          </div>
+        </details>
+        <p>Because the combination is a straight line, the best line from \(r\) is the one <b>tangent</b> to the efficient frontier: the <b>Capital Market Line (CML)</b>. Every investor holds some mix of the risk-free asset and that single tangency portfolio, scaled to their risk appetite (and leverage).</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>The risk-free asset is a <b>dimmer switch</b> on one ideal "best" portfolio: turn it down (hold cash) for less risk, turn it up past 100% (borrow/leverage) for more — all along one straight, efficient line.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> MPT probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Where does diversification's benefit come from, mathematically?</div><div class="a">The covariance/cross terms in \(\sigma_p^2=\mathbf w^{\mathsf T}\mathbf C\mathbf w\). When \(\rho&lt;1\) the cross term is less than the weighted average of variances, so portfolio risk falls below the weighted-average risk — without lowering expected return.</div></div>
+          <div class="qa"><div class="q">What is the efficient frontier and why hold only frontier portfolios?</div><div class="a">The set maximising return per unit risk. Any interior portfolio is dominated — you could strictly improve return or risk — so a rational investor never holds one.</div></div>
+          <div class="qa"><div class="q">What does adding a risk-free asset do?</div><div class="a">It creates the straight Capital Market Line from \(r\) tangent to the frontier; combinations of cash and the tangency portfolio dominate the curved frontier, so everyone holds the same risky portfolio in different proportions.</div></div>
+          <div class="qa follow"><div class="q">Biggest practical weakness of MPT?</div><div class="a">Sensitivity to inputs — especially expected returns (hard to forecast) and unstable correlations that jump to +1 in crises, exactly when diversification is needed. Estimation error can dominate the "optimisation".</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "MPT picks weights to trade expected return against variance. Because portfolio variance \(\mathbf w^{\mathsf T}\mathbf C\mathbf w\) depends on <b>correlations</b>, combining imperfectly-correlated assets cuts risk for free. The best risk/return combos form the <b>efficient frontier</b>; adding a risk-free asset turns it into the straight Capital Market Line — but the answer is only as good as the return estimates fed in."</div>
+
+    <div class="revise-bar">
+      <button class="btn primary" id="revise-btn" data-id="portfolio"><span class="lbl">Mark this topic as revised</span></button>
+      <span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span>
+    </div>
+    <div class="page-nav" id="page-nav"></div>
+
+  </div></main>
+</div>
+<button id="to-top" aria-label="Back to top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+function draw(){
+  const C=CF.colors();
+  // ---- two-asset correlation curves ----
+  const r1=0.10,r2=0.20,s1=0.07,s2=0.10;
+  const rhos=[1,0.5,0,-0.5,-1];
+  const traces=rhos.map((rho,k)=>{
+    const xs=[],ys=[];
+    for(let w=0;w<=1.0001;w+=0.02){const w2=1-w;
+      const v=w*w*s1*s1+w2*w2*s2*s2+2*w*w2*rho*s1*s2;
+      xs.push(Math.sqrt(Math.max(v,0))*100);ys.push((w*r1+w2*r2)*100);}
+    return {x:xs,y:ys,mode:'lines',name:'ρ = '+rho,line:{width:rho===-1?3:2}};
+  });
+  Plotly.react('ch-corr',traces,CF.layout({hovermode:'closest',
+    xaxis:{title:'Portfolio risk  σ_p (%)',gridcolor:C.grid},
+    yaxis:{title:'Expected return (%)',gridcolor:C.grid}}),CF.config);
+
+  // ---- Monte Carlo frontier (4 assets) ----
+  const mu=[0.04,0.07,0.10,0.16], sig=[0.05,0.08,0.13,0.22];
+  const corr=[[1,.3,.2,.1],[.3,1,.35,.2],[.2,.35,1,.4],[.1,.2,.4,1]];
+  const cov=(i,j)=>corr[i][j]*sig[i]*sig[j];
+  const N=2500, px=[],py=[];
+  let rng=12345; const rand=()=>{rng=(rng*1103515245+12345)&0x7fffffff;return rng/0x7fffffff;};
+  for(let n=0;n<N;n++){
+    let w=[rand(),rand(),rand(),rand()];const s=w[0]+w[1]+w[2]+w[3];w=w.map(x=>x/s);
+    let er=0;for(let i=0;i<4;i++)er+=w[i]*mu[i];
+    let v=0;for(let i=0;i<4;i++)for(let j=0;j<4;j++)v+=w[i]*w[j]*cov(i,j);
+    px.push(Math.sqrt(v)*100);py.push(er*100);
+  }
+  // approximate frontier: max return per risk-bucket
+  const buckets={};
+  for(let n=0;n<N;n++){const b=Math.round(px[n]*2)/2;if(!(b in buckets)||py[n]>buckets[b].y)buckets[b]={x:px[n],y:py[n]};}
+  const fb=Object.values(buckets).sort((a,b)=>a.x-b.x);
+  Plotly.react('ch-frontier',[
+    {x:px,y:py,mode:'markers',name:'Random portfolios',marker:{size:4,color:py.map((v,i)=>v/px[i]),colorscale:'Viridis',opacity:.45,showscale:false}},
+    {x:fb.map(p=>p.x),y:fb.map(p=>p.y),mode:'lines',name:'Efficient frontier',line:{color:C.bad,width:3.5}}
+  ],CF.layout({hovermode:'closest',legend:{orientation:'h',y:1.1,x:0},
+    xaxis:{title:'Risk  σ_p (%)',gridcolor:C.grid},
+    yaxis:{title:'Expected return (%)',gridcolor:C.grid}}),CF.config);
+}
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

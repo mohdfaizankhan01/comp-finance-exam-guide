@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algorithmic Execution — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar"><button class="icon-btn" id="menu-btn"><span class="menu-ic"></span></button><strong style="font-size:15px">Algorithmic Execution</strong><button class="icon-btn" data-theme-toggle style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button></div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 6 · Markets & Microstructure</div>
+    <h1 class="page-title">Algorithmic Execution</h1>
+    <p class="page-lede">You want to buy a lot of shares without shoving the price up against yourself. These are the algorithms that slice big orders to minimise cost — and how to choose between them.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#why">The execution problem</a></li>
+      <li><a href="#impact">Market impact</a></li>
+      <li><a href="#algos">The algorithm zoo</a></li>
+      <li><a href="#frontier">Efficient frontier & risk aversion</a></li>
+    </ul></div>
+
+    <div class="concept" id="why">
+      <h2 class="section-h">The execution problem</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>Deciding <em>how</em> to trade a large order — split into how many pieces, at what times — so the total cost (including the price you yourself push) is as small as possible.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>For a big institution, execution cost can dwarf research alpha. Buying a full day's volume in one go could move the price several percent — that's real money lost before the position even works.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Four cost sources to balance:</p>
+        <ul>
+          <li><b>Impact:</b> trading fast pushes the price (you don't want to buy yourself up).</li>
+          <li><b>Timing:</b> if you trade more than once, when?</li>
+          <li><b>Delay:</b> trade too slowly and your idea/edge may decay.</li>
+          <li><b>Opportunity:</b> can you even get all the shares?</li>
+        </ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Like <b>selling a huge stash of concert tickets</b>: dump them all at once and the price collapses (impact); dribble them out too slowly and the concert's over (delay). The art is the pace in between.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div><p>You want 10,000 shares of a stock whose <em>entire daily volume</em> is 10,000. Buy it all now and you'll badly move the price; you must spread it across the day (and maybe across days), accepting some delay risk.</p></div>
+    </div>
+
+    <div class="concept" id="impact">
+      <h2 class="section-h">Market impact</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Impact is the price change your own order causes. It splits into:</p>
+        <ul>
+          <li><b>Temporary impact:</b> the price dips/jumps while you trade, then recovers.</li>
+          <li><b>Permanent impact:</b> a lasting shift, because your order leaked information or triggered other traders.</li>
+        </ul>
+        <p>It's hard to measure (you'd need the counterfactual "what if I hadn't traded"). As seen in the LOB lecture, instantaneous impact is <em>concave</em> in size — so splitting helps.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Temporary impact is the <b>splash</b> when you jump in a pool (settles quickly); permanent impact is the <b>ripple others mistake for a current</b> and start swimming with — it doesn't fully fade.</p></div>
+    </div>
+
+    <div class="concept" id="algos">
+      <h2 class="section-h">The algorithm zoo</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Algo</th><th>Idea</th><th>Strength / weakness</th></tr></thead>
+          <tbody>
+            <tr><td><b>TWAP</b></td><td>Time-Weighted: equal slices at equal time intervals.</td><td>Dead simple; ignores price & volume; highly predictable.</td></tr>
+            <tr><td><b>VWAP</b></td><td>Volume-Weighted: trade in proportion to the day's volume profile (\(\text{VWAP}=\frac{\sum p_i v_i}{\sum v_i}\)).</td><td>Tracks a fair benchmark; needs historical volume pattern (total volume only known at day's end).</td></tr>
+            <tr><td><b>POV</b></td><td>Percentage Of Volume: trade \(w_i=\alpha\, v_i\) of each interval's volume.</td><td>Adapts to live volume; still predictable; no price logic.</td></tr>
+            <tr><td><b>IS</b></td><td>Implementation Shortfall: minimise gap between execution price and the decision price.</td><td>Balances impact vs timing risk; uses risk aversion; front-loads trading.</td></tr>
+            <tr><td><b>MI / MC / PI / LIQ</b></td><td>Minimal Impact (dark pools), Market Close, Price Inline, Liquidity-driven.</td><td>Specialised objectives.</td></tr>
+          </tbody>
+        </table></div>
+        <p>TWAP is about trading <em>regularly</em>; VWAP adds trading in the right <em>proportions</em>. Both are predictable, so practitioners add noise to timing/sizes to hide. POV self-adjusts: subtract your own participation to get \(\tilde\alpha=\alpha/(1-\alpha)\).</p>
+      </div>
+      <div class="chart-card">
+        <div id="ch-complete" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> % of the order completed over the day. <b>TWAP</b> is a straight line (constant pace). <b>VWAP/POV</b> follows the U-shaped daily volume — trading more at the busy open and close, less at the quiet midday — to blend in with natural flow.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>TWAP = <b>eating the same amount every hour</b> regardless. VWAP = <b>eating when everyone else eats</b> (lunch rush) so your portion goes unnoticed in the crowd.</p></div>
+    </div>
+
+    <div class="concept" id="frontier">
+      <h2 class="section-h">Efficient frontier & risk aversion</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>A way to choose among algorithms: plot each one's expected <b>cost</b> against its <b>risk</b> (cost variability, mostly timing). The best ones form a frontier; your risk appetite picks the point.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>It mirrors Markowitz exactly — there's no single "best" algorithm, only the cheapest one for a given level of risk. It makes the choice principled rather than ad hoc.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Trading fast → low timing risk but high impact cost (e.g. Market Close). Trading slow → low impact but high timing risk (e.g. Minimal Impact). The trade-off traces an <b>efficient frontier</b>; for a given risk you pick the lowest-cost algo. Define risk aversion \(\lambda=\text{cost}/\text{risk}\): high λ = cautious (accept cost to cut risk), low λ = aggressive.</p>
+      </div>
+      <div class="chart-card">
+        <div id="ch-effalgo" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> the cost–risk plane for execution algos. Market Close (MC) sits low-risk/high-cost; Minimal Impact (MI) high-risk/low-cost; IS, POV, VWAP fill the curve. You choose the point matching your risk aversion λ — exactly like picking a portfolio on the efficient frontier.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Like <b>choosing a delivery speed</b>: overnight (low risk it's late, high cost) vs standard (cheap, but risk of delay). Your patience (risk aversion λ) decides which shipping option is "best" for you.</p></div>
+      <div class="callout warn"><span class="ttl">Portfolio note</span> Trading a whole <em>portfolio</em> (many assets at once) needs extra care: orders must stay aligned to keep diversification intact during execution — "algorithms of algorithms".</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Execution probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">TWAP vs VWAP?</div><div class="a">TWAP slices equally over time, ignoring volume — simple but naïve and predictable. VWAP trades in proportion to the volume profile, blending into natural flow and tracking a fairer benchmark, but it relies on the volume pattern (true total is only known at close).</div></div>
+          <div class="qa"><div class="q">Why split a large order at all?</div><div class="a">To minimise market impact, which is concave but partly permanent. Trading slowly cuts impact but raises timing risk (the price may drift away) — the central trade-off.</div></div>
+          <div class="qa"><div class="q">What is Implementation Shortfall minimising?</div><div class="a">The gap between the average execution price and the price at the moment you decided to trade — balancing impact against timing risk, tuned by the investor's risk aversion.</div></div>
+          <div class="qa follow"><div class="q">How do you choose an algorithm?</div><div class="a">Pick from the cost–risk efficient frontier the point matching your risk aversion λ = cost/risk: aggressive (low λ) tolerates impact to reduce timing risk; cautious (high λ) does the opposite.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "Big orders move the price (concave, partly-permanent <b>impact</b>), so we slice them: TWAP (by time), VWAP/POV (by volume), IS (minimise slippage vs the decision price). Trading fast cuts timing risk but costs impact and vice-versa, tracing an <b>efficient frontier</b> of algorithms — you pick the point that matches your risk aversion λ."</div>
+
+    <div class="revise-bar"><button class="btn primary" id="revise-btn" data-id="execution"><span class="lbl">Mark this topic as revised</span></button><span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span></div>
+    <div class="page-nav" id="page-nav"></div>
+  </div></main>
+</div>
+<button id="to-top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+function draw(){
+  const C=CF.colors();
+  // completion curves
+  const h=[];for(let i=0;i<=26;i++)h.push(i);
+  const tw=h.map(i=>i/26*100);
+  // U-shaped volume profile -> cumulative
+  const vol=h.map(i=>{const x=i/26;return 1+2.2*(Math.pow(x-0.5,2));});
+  let cum=0;const tot=vol.reduce((a,b)=>a+b,0);const vwap=vol.map(v=>{cum+=v;return cum/tot*100;});
+  Plotly.react('ch-complete',[
+    {x:h,y:tw,name:'TWAP (by time)',line:{color:C.accent,width:3}},
+    {x:h,y:vwap,name:'VWAP / POV (by volume)',line:{color:C.bad,width:3}}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'Trading interval through the day',gridcolor:C.grid},yaxis:{title:'% of order completed',gridcolor:C.grid,range:[0,102]}}),CF.config);
+  // efficient frontier of algos
+  const pts=[{n:'MC',x:0.6,y:9},{n:'IS',x:1.5,y:6},{n:'AS',x:2.2,y:4.6},{n:'POV',x:3.0,y:3.8},{n:'PI',x:3.6,y:3.3},{n:'VWAP',x:4.6,y:3.0},{n:'LIQ',x:5.4,y:2.6},{n:'MI',x:6.2,y:2.2}];
+  Plotly.react('ch-effalgo',[
+    {x:pts.map(p=>p.x),y:pts.map(p=>p.y),mode:'markers+text',text:pts.map(p=>p.n),textposition:'top center',
+     name:'Algorithms',marker:{color:C.how,size:11},textfont:{size:11,color:C.textSoft}},
+    {x:pts.map(p=>p.x),y:pts.map(p=>p.y),mode:'lines',name:'Efficient frontier',line:{color:C.accent,width:2,dash:'dot'}}
+  ],CF.layout({hovermode:'closest',xaxis:{title:'Risk (cost variability →)',gridcolor:C.grid},yaxis:{title:'Expected cost',gridcolor:C.grid}}),CF.config);
+}
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

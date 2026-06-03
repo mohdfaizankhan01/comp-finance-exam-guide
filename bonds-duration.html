@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bonds — Duration & Convexity — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar">
+  <button class="icon-btn" id="menu-btn" aria-label="Menu"><span class="menu-ic"></span></button>
+  <strong style="font-size:15px">Bonds — Duration & Convexity</strong>
+  <button class="icon-btn" data-theme-toggle aria-label="Toggle theme" style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 12 · Fixed Income</div>
+    <h1 class="page-title">Bonds — Duration & Convexity</h1>
+    <p class="page-lede">Forward rates implied by today's curve, and how duration and convexity let you estimate a bond's price change when rates move.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#fwd">Forward rates</a></li>
+      <li><a href="#shifts">How the yield curve moves</a></li>
+      <li><a href="#dur">Duration</a></li>
+      <li><a href="#durprice">Duration as price sensitivity</a></li>
+      <li><a href="#conv">Convexity</a></li>
+      <li><a href="#types">Types of duration</a></li>
+    </ul></div>
+
+    <div class="concept" id="fwd">
+      <h2 class="section-h">Forward rates</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The interest rate for a future period that is <em>already implied</em> by today's zero-coupon curve — the rate you could lock in now for borrowing/lending later.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>The current curve doesn't just price today's loans — it embeds the market's view of future rates. Forward rates are used to price forwards, set mortgage rates starting in the future, and check for arbitrage between maturities.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>No-arbitrage forces consistency: investing for \(T_2\) at the long rate must equal investing for \(T_1\) then rolling at the forward rate. With continuous compounding:</p>
+        <div class="formula">\[ r_{\text{fwd}}=\frac{R_2 T_2 - R_1 T_1}{T_2 - T_1} \]</div>
+        <ul class="legend"><li><span class="sym">R₁,R₂</span> zero rates for maturities <span class="sym">T₁,T₂</span>; the forward is the rate that covers the gap \([T_1,T_2]\).</li></ul>
+        <details class="acc"><summary><span class="tag derive">Derivation</span> Forward 1-year-in-1-year</summary>
+          <div class="acc-body">
+            <p>Zero rates: 1y = 10.0%, 2y = 10.5%. Locking 1y now then a forward \(x\) for the 2nd year must match investing 2y outright:</p>
+            <div class="formula tight">\[ e^{0.10}\,e^{x}=e^{0.105\cdot2}\;\Rightarrow\;0.10+x=0.21\;\Rightarrow\;x=11\%. \]</div>
+            <p>If the forward were, say, 10%, you'd sell the 1y + forward and buy the 2y to earn \(100(e^{0.21}-e^{0.20})&gt;0\) risk-free — an arbitrage. So 11% is forced. Generalising gives the formula above; the 1y-in-2y here works out to 11.4%.</p>
+          </div>
+        </details>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>A forward rate is the <b>price of a flight you book today for travel next year</b> — set now from current information, even though you fly later. If two routes to the same destination cost different amounts, travellers arbitrage the gap away.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example — mortgages</div>
+        <p>You'll buy a house in 1 year and want a 10-year mortgage. The bank prices it off the <b>11-year and 1-year</b> rates — i.e. the forward 10-year rate starting in 1 year. That forward is baked into today's curve.</p></div>
+    </div>
+
+    <div class="concept" id="shifts">
+      <h2 class="section-h">How the yield curve moves</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>The whole curve evolves — short end driven by central banks, the rest by market forces. Moves decompose into three classic shapes:</p>
+        <ul>
+          <li><b>Parallel shift:</b> the entire curve up or down by the same amount (duration captures this).</li>
+          <li><b>Steepening:</b> long rates rise relative to short.</li>
+          <li><b>Flattening:</b> long rates fall relative to short (can invert).</li>
+        </ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Think of the curve as a <b>see-saw plank</b>: a parallel shift lifts the whole plank; steepening/flattening tilts it around a pivot.</p></div>
+    </div>
+
+    <div class="concept" id="dur">
+      <h2 class="section-h">Duration</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The average time you wait to receive a bond's cash flows, weighted by their present value — and, conveniently, a measure of how sensitive the price is to yield.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Duration is the bond world's "Delta": one number summarising interest-rate risk. Portfolio managers control duration to dial risk up or down, especially when rates are rising.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ D=\frac{\sum_{i=1}^{n}(t_i-t)\,c_i\,e^{-y(t_i-t)}}{B(t)}=\sum_{i=1}^n (t_i-t)\cdot\underbrace{\frac{c_i e^{-y(t_i-t)}}{B(t)}}_{\text{PV weight, sums to 1}} \]</div>
+        <p class="legend">It's a weighted average of payment times, with weights = each cash flow's share of total present value. So a zero-coupon bond maturing in \(n\) years has duration exactly \(n\); a coupon bond has duration <em>less</em> than \(n\) (early coupons pull the average in).</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Duration is the <b>balance point of a row of weights</b> placed along a timeline — each weight is a discounted cash flow. A zero-coupon bond has all its weight at the end (balances at \(n\)); coupons add weights earlier, sliding the balance point left.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>3-year, 10% coupon (semi-annual $5), yield 12%. Discount each cash flow, weight by PV, multiply by time:</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th class="num">t</th><th class="num">PV</th><th class="num">weight</th><th class="num">t·weight</th></tr></thead>
+          <tbody>
+            <tr><td class="num">0.5</td><td class="num">4.709</td><td class="num">0.050</td><td class="num">0.025</td></tr>
+            <tr><td class="num">1.0</td><td class="num">4.435</td><td class="num">0.047</td><td class="num">0.047</td></tr>
+            <tr><td class="num">1.5</td><td class="num">4.176</td><td class="num">0.044</td><td class="num">0.066</td></tr>
+            <tr><td class="num">2.0</td><td class="num">3.933</td><td class="num">0.042</td><td class="num">0.083</td></tr>
+            <tr><td class="num">2.5</td><td class="num">3.704</td><td class="num">0.039</td><td class="num">0.098</td></tr>
+            <tr><td class="num">3.0</td><td class="num">73.256</td><td class="num">0.778</td><td class="num">2.333</td></tr>
+            <tr><td class="num"><b>Σ</b></td><td class="num"><b>94.213 = B</b></td><td class="num"><b>1.000</b></td><td class="num"><b>2.653 = D</b></td></tr>
+          </tbody>
+        </table></div>
+        <p>Duration \(D=2.653\) years — between 0 and 3, as expected for a coupon bond.</p></div>
+    </div>
+
+    <div class="concept" id="durprice">
+      <h2 class="section-h">Duration as price sensitivity</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Differentiate the price formula with respect to yield:</p>
+        <div class="formula">\[ \frac{\partial B}{\partial y}=-\sum_i (t_i-t)\,c_i\,e^{-y(t_i-t)} = -B\,D \quad\Longrightarrow\quad \boxed{\dfrac{\delta B}{B}=-D\,\delta y} \]</div>
+        <p class="legend">A small parallel yield shift \(\delta y\) changes price by approximately \(-D\,\delta y\) (in percent). Higher duration ⇒ bigger price swing. This is a <b>first-order (linear)</b> estimate — good for small shifts, less so for large ones.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Duration is the bond's <b>"leverage to rates" rating</b> — like a car's 0-to-60 sensitivity. A duration-8 bond reacts roughly twice as hard to a rate move as a duration-4 bond.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example — small vs large shift</div>
+        <p><b>Small shift</b> \(\delta y=0.1\%\): estimate \(\delta B=-B D\delta y=-94.213\times2.653\times0.001=-0.250\). Actual recompute: \(93.963-94.213=-0.250\). ✓ Spot on.</p>
+        <p><b>Large shift</b> \(\delta y=1\%\): estimate \(-94.213\times2.653\times0.01=-2.499\). Actual: \(91.749-94.213=-2.464\). The estimate overstates the loss — the linear approximation misses the curve. That gap is <b>convexity</b>.</p></div>
+      <div class="chart-card">
+        <div id="ch-dur" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> the true price–yield curve (solid) vs the straight-line <b>duration estimate</b> (dashed) tangent at y = 12%. They match for tiny moves but the line drifts below the curve for big moves — duration alone <em>overestimates</em> price drops and <em>underestimates</em> price rises. The curvature gap is convexity.</span></div>
+      </div>
+    </div>
+
+    <div class="concept" id="conv">
+      <h2 class="section-h">Convexity</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The curvature of the price–yield relationship — the second-order correction that makes the estimate accurate for larger yield moves.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Convexity is a <em>good</em> thing for a bondholder: prices rise more when rates fall than they drop when rates rise by the same amount. Ignoring it makes you mis-estimate risk on big moves.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ C=\frac{1}{B}\frac{\partial^2 B}{\partial y^2}=\frac{1}{B}\sum_i c_i (t_i-t)^2 e^{-y(t_i-t)} \qquad \frac{\delta B}{B}\approx -D\,\delta y+\tfrac12 C\,(\delta y)^2 \]</div>
+        <p class="legend">The new \(+\tfrac12 C(\delta y)^2\) term is always positive (it lifts the price back toward the true curve), correcting duration's overshoot.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Duration is the speed estimate; convexity is the <b>"and you're also turning" correction</b>. On a sharp bend (big rate move) you must account for the curve, not just the straight-line speed.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Same bond, convexity \(C=7.570\), \(\delta y=1\%\): \(\delta B=-94.213\cdot2.653\cdot0.01+0.5\cdot94.213\cdot7.570\cdot0.01^2=-2.499+0.0357=-2.464\). Now it matches the true \(-2.464\). ✓ The convexity term closed the gap.</p></div>
+    </div>
+
+    <div class="concept" id="types">
+      <h2 class="section-h">Types of duration</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Macaulay duration</b> (the one above): PV-weighted average time to cash flows.</li>
+          <li><b>Modified duration</b> \(D_{\text{mod}}=\dfrac{D}{1+y/n_c}\): converts to a direct % price sensitivity per unit yield (with \(n_c\) compoundings/year).</li>
+          <li><b>Dollar duration / DV01</b> \(=\dfrac{D_{\text{mod}}B}{100}\): the cash price change for a 1bp (0.01%) yield move — the trader's working unit.</li>
+          <li><b>Effective duration:</b> for bonds with embedded options (callable/putable) where cash flows aren't fixed.</li>
+          <li><b>Key-rate duration:</b> sensitivity to specific points on the curve — captures non-parallel (steepening/flattening) shifts.</li>
+        </ul>
+        <p><b>At portfolio level:</b> duration is the weighted sum of constituent durations (per currency for multi-currency books). Managers keep duration down when rates are expected to rise. Volatility is a decent proxy for duration risk.</p>
+      </div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Duration & convexity probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Two meanings of duration — reconcile them.</div><div class="a">It's both (a) the PV-weighted average <em>time</em> to cash flows and (b) the bond's <em>price sensitivity</em> to yield (\(\delta B/B=-D\,\delta y\)). They coincide because differentiating the PV pricing formula produces exactly that weighted-time expression.</div></div>
+          <div class="qa"><div class="q">Why does a coupon bond have lower duration than its maturity?</div><div class="a">Coupons deliver some cash <em>before</em> maturity, placing PV weight at earlier times and pulling the weighted-average time below \(n\). A zero-coupon bond has all weight at the end, so its duration equals its maturity.</div></div>
+          <div class="qa"><div class="q">Duration estimate vs reality for a big rate move — which way is it wrong?</div><div class="a">Duration alone <b>overstates the price fall</b> when rates rise and <b>understates the gain</b> when they fall, because the true relationship is convex. Add the \(+\tfrac12C(\delta y)^2\) convexity term to fix it.</div></div>
+          <div class="qa follow"><div class="q">Is convexity good or bad to own?</div><div class="a">Good — for a given duration, more convexity means you gain more on rate falls and lose less on rate rises. Investors will pay (accept lower yield) for higher convexity.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "Today's curve implies forward rates by no-arbitrage. <b>Duration</b> is the PV-weighted average time to cash flows and equals the bond's first-order price sensitivity: \(\delta B/B=-D\,\delta y\). For big moves the price–yield curve bends, so we add the positive <b>convexity</b> term \(+\tfrac12 C\,\delta y^2\)."</div>
+
+    <div class="revise-bar">
+      <button class="btn primary" id="revise-btn" data-id="duration"><span class="lbl">Mark this topic as revised</span></button>
+      <span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span>
+    </div>
+    <div class="page-nav" id="page-nav"></div>
+
+  </div></main>
+</div>
+<button id="to-top" aria-label="Back to top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+function bondP(y){const cf=[[0.5,5],[1,5],[1.5,5],[2,5],[2.5,5],[3,105]];return cf.reduce((s,[t,c])=>s+c*Math.exp(-y*t),0);}
+function draw(){
+  const C=CF.colors();
+  const y0=0.12,B0=bondP(y0),D=2.653;
+  const ys=[],ps=[],lin=[];
+  for(let y=0.04;y<=0.20;y+=0.004){ys.push(y*100);ps.push(bondP(y));lin.push(B0*(1-D*(y-y0)));}
+  Plotly.react('ch-dur',[
+    {x:ys,y:ps,name:'True price',line:{color:C.accent,width:3.5}},
+    {x:ys,y:lin,name:'Duration (linear) estimate',line:{color:C.bad,width:2,dash:'dash'}},
+    {x:[12],y:[B0],mode:'markers',name:'y = 12%',marker:{color:C.how,size:10}}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'Yield  y (%)',gridcolor:C.grid},yaxis:{title:'Price  B',gridcolor:C.grid}}),CF.config);
+}
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

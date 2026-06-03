@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Limit Order Book — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar"><button class="icon-btn" id="menu-btn"><span class="menu-ic"></span></button><strong style="font-size:15px">Limit Order Book</strong><button class="icon-btn" data-theme-toggle style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button></div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 5 · Markets & Microstructure</div>
+    <h1 class="page-title">Limit Order Book</h1>
+    <p class="page-lede">The engine inside an exchange: a live list of all resting buy and sell orders. Understanding it is the key to execution, impact, and market liquidity.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#who">Two ways to trade</a></li>
+      <li><a href="#def">Definitions: bid, ask, spread, depth</a></li>
+      <li><a href="#evolve">How the book evolves</a></li>
+      <li><a href="#priority">Priority rules</a></li>
+      <li><a href="#facts">Empirical facts & impact</a></li>
+      <li><a href="#maslov">Maslov model</a></li>
+    </ul></div>
+
+    <div class="concept" id="who">
+      <h2 class="section-h">Two ways to trade</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>You either trade against a <b>market maker</b> (OTC) who quotes you a price, or you post into a <b>limit order book (LOB)</b> on an exchange where buyers and sellers are matched directly.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>Most modern trading happens through LOBs. They're where price is actually formed, where liquidity lives, and where your own orders can move the market against you.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div><p>A <b>market maker</b> holds an inventory (hence risk) and profits from the <b>spread</b> — buying at the bid, selling at the ask — sometimes hedging with another maker when too exposed. A <b>LOB</b> instead collects everyone's orders and matches them algorithmically: it's the meeting place of all participants.</p></div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>A market maker is a <b>currency-exchange booth</b> (you take their quote; they pocket the spread). A LOB is an <b>eBay for one product</b> — a live list of everyone's bids and asks, matched automatically.</p></div>
+    </div>
+
+    <div class="concept" id="def">
+      <h2 class="section-h">Definitions: bid, ask, spread, depth</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>The LOB \(L(t)\) is the set of all active orders at time \(t\). An order is \(x=(p_x,w_x,t_x)\): price, size, insertion time.</p>
+        <ul class="legend">
+          <li><b>Bid</b> \(b(t)=\max_{x\in B(t)}p_x\) — the highest price someone will buy at.</li>
+          <li><b>Ask</b> \(a(t)=\min_{x\in A(t)}p_x\) — the lowest price someone will sell at.</li>
+          <li><b>Spread</b> \(s(t)=a(t)-b(t)\); <b>mid-price</b> \(m(t)=\tfrac{a(t)+b(t)}2\).</li>
+          <li><b>Tick</b> \(\pi\): smallest price increment. <b>Depth</b> \(N(p,t)\): total size resting at each price level.</li>
+        </ul>
+        <p>An order that matches immediately is a <b>market order</b>; one that rests in the book is a <b>limit order</b>.</p>
+      </div>
+      <div class="chart-card">
+        <div id="ch-depth" class="chart"></div>
+        <div class="chart-cap"><span>📊</span><span><b>What this shows:</b> a snapshot of book depth. Green bars (bids) sit below, red bars (asks) above; the empty gap between the best bid and best ask is the <b>spread</b>. Taller bars = more liquidity resting at that price.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>The book is a <b>staircase of orders</b> on each side; the spread is the empty landing in the middle, and depth is how many people are queued on each step.</p></div>
+    </div>
+
+    <div class="concept" id="evolve">
+      <h2 class="section-h">How the book evolves</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>For an incoming buy order at price \(p_x\):</p>
+        <ul>
+          <li>\(p_x\le b(t)\): rests deep — limit order, best bid unchanged.</li>
+          <li>\(b(t)&lt;p_x&lt;a(t)\): limit order that <em>improves</em> the bid up to \(p_x\) (thinner spread).</li>
+          <li>\(p_x\ge a(t)\): market order — matched immediately at the best ask.</li>
+        </ul>
+        <p>Limit orders get a better price but carry <b>opportunity risk</b>: they might never execute. That's the eternal trade-off — cheaper fill vs certainty of fill.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>A limit order is <b>leaving a "I'll buy at this price" note</b> and waiting; a market order is <b>grabbing whatever's on the shelf right now</b>. The note is cheaper but might be ignored forever.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div><p>Book at bid 1.50 / ask 1.53. A limit buy at 1.51 lifts the bid to 1.51 (spread shrinks 0.03→0.02). A market buy at 1.53 hits the ask, lifting it to the next level (1.54) — the spread and mid both move.</p></div>
+    </div>
+
+    <div class="concept" id="priority">
+      <h2 class="section-h">Priority rules</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>When several orders sit at the same best price, who gets filled first?</p>
+        <ul>
+          <li><b>Price-time:</b> best price first; ties broken by who arrived first → rewards posting early.</li>
+          <li><b>Pro-rata:</b> best price; ties split proportionally to size (\(w/\sum w\)) → rewards large orders.</li>
+          <li><b>Price-size:</b> best price; largest order first → also rewards size.</li>
+        </ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Price-time is a <b>first-come queue at a bakery</b>; pro-rata is <b>splitting the last loaves by how much each person ordered</b>; price-size is <b>serving the biggest order first</b>.</p></div>
+    </div>
+
+    <div class="concept" id="facts">
+      <h2 class="section-h">Empirical facts & market impact</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>Across markets (with variation): order sizes cluster at round numbers; the relative price of orders (distance from best) is fat-tailed (orders placed far away); <b>70–80% of orders are cancelled</b>; book depth is fat-tailed.</p>
+        <p><b>Market impact:</b> an order moves the price. Impact = <em>temporary</em> (recovers) + <em>permanent</em> (sticks, because the order carried information or triggered others). Crucially, instantaneous price impact \(I(|w|)\) is a <b>concave</b> function of size — doubling the order less than doubles the impact (Lillo et al. found a "master curve"). This is why big orders are split up.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Buying a lot is like <b>drinking through a straw from a pond</b>: the first gulps barely lower the level (concave impact), but each gulp leaves a small permanent dip — others notice and react.</p></div>
+      <div class="callout info"><span class="ttl">Why it matters</span> Concave, partly-permanent impact is the entire reason for the next lecture (algorithmic execution): break big orders into pieces to minimise how much you push the price against yourself.</div>
+    </div>
+
+    <div class="concept" id="maslov">
+      <h2 class="section-h">The Maslov model</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>A famously simple physicist's model (Maslov, 2000) of an order-driven market:</p>
+        <ul>
+          <li>One trader per step; 50/50 buyer or seller.</li>
+          <li>With probability \(1-r\): submit a <b>market order</b>; otherwise a <b>limit order</b> at last price ± a random offset \(k\).</li>
+          <li>No cancellations.</li>
+        </ul>
+        <p>Despite its crudeness, it reproduces <b>fat-tailed returns</b> and <b>negative short-lag autocorrelation</b> — and a Hurst exponent of ¼ (vs ½ for a random walk), signalling anti-persistent memory. Impressive structure from almost nothing.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Like discovering that a <b>few simple traffic rules</b> generate realistic, complex jams — minimal ingredients, surprisingly lifelike behaviour. (Heterogeneous agents come next, in agent-based models.)</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> LOB probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Define bid, ask, spread, mid.</div><div class="a">Bid = highest buy price, ask = lowest sell price, spread = ask − bid, mid = their average. The spread is the immediate round-trip cost of liquidity.</div></div>
+          <div class="qa"><div class="q">Market vs limit order — the trade-off?</div><div class="a">Market order: immediate fill, pays the spread/impact. Limit order: better price, but opportunity risk of never executing. Choose based on urgency.</div></div>
+          <div class="qa"><div class="q">Why is market impact concave, and why does it matter?</div><div class="a">Empirically \(I(|w|)\) grows slower than linearly in size; combined with a permanent component, it means large orders should be split and worked over time — the basis of execution algorithms.</div></div>
+          <div class="qa follow"><div class="q">What's surprising about the Maslov model?</div><div class="a">Extremely simple rules (random market/limit orders, no cancellation) already reproduce fat tails and negative short-lag autocorrelation — real stylised facts emerge from minimal structure.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "A limit order book is the live list of resting buy/sell orders; the best bid and ask define the spread, market orders cross it while limit orders rest with opportunity risk, and orders are matched by priority rules. Real books show fat tails, ~80% cancellations and <b>concave, partly-permanent market impact</b> — which is exactly why big orders must be split (next: execution)."</div>
+
+    <div class="revise-bar"><button class="btn primary" id="revise-btn" data-id="lob"><span class="lbl">Mark this topic as revised</span></button><span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span></div>
+    <div class="page-nav" id="page-nav"></div>
+  </div></main>
+</div>
+<button id="to-top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+function draw(){
+  const C=CF.colors();
+  const bidP=[1.46,1.47,1.48,1.49,1.50], bidW=[2,3,1.5,4,2.5];
+  const askP=[1.53,1.54,1.55,1.56,1.57], askW=[2,3.5,1.2,3,2.8];
+  Plotly.react('ch-depth',[
+    {x:bidP,y:bidW,type:'bar',name:'Bids (buy)',marker:{color:C.good}},
+    {x:askP,y:askW,type:'bar',name:'Asks (sell)',marker:{color:C.bad}}
+  ],CF.layout({bargap:0.15,hovermode:'closest',xaxis:{title:'Price (best bid 1.50 | best ask 1.53 → spread 0.03)',gridcolor:C.grid},yaxis:{title:'Resting size (depth)',gridcolor:C.grid}}),CF.config);
+}
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

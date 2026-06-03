@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Options — The Greeks — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar">
+  <button class="icon-btn" id="menu-btn" aria-label="Menu"><span class="menu-ic"></span></button>
+  <strong style="font-size:15px">Options — The Greeks</strong>
+  <button class="icon-btn" data-theme-toggle aria-label="Toggle theme" style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 10 · Derivatives</div>
+    <h1 class="page-title">Options — The Greeks</h1>
+    <p class="page-lede">The sensitivities of an option's price to each risk factor. They are the dashboard a trader watches and the dials they turn to hedge.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#intro">What the Greeks are</a></li>
+      <li><a href="#manage">Managing option risk</a></li>
+      <li><a href="#delta">Delta (Δ)</a></li>
+      <li><a href="#dhedge">Delta hedging</a></li>
+      <li><a href="#theta">Theta (Θ)</a></li>
+      <li><a href="#gamma">Gamma (Γ)</a></li>
+      <li><a href="#ghedge">Gamma-neutral & the Taylor view</a></li>
+      <li><a href="#more">Vega, Rho & portfolios</a></li>
+    </ul></div>
+
+    <!-- INTRO -->
+    <div class="concept" id="intro">
+      <h2 class="section-h">What the Greeks are</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The Greeks are the partial derivatives of an option's price — each one measures how much the price moves when <em>one</em> input changes and the rest stay fixed.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>An option is exposed to many risks at once (price, time, volatility, rates). The Greeks <b>decompose</b> that risk into separate, hedgeable numbers, so you can neutralise the bits you don't want and keep the bit you're paid for.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Greek</th><th>Symbol</th><th>Sensitivity to…</th><th>Derivative</th></tr></thead>
+          <tbody>
+            <tr><td>Delta</td><td>Δ</td><td>underlying price \(S\)</td><td>\(\partial c/\partial S\)</td></tr>
+            <tr><td>Gamma</td><td>Γ</td><td>Delta itself (curvature)</td><td>\(\partial^2 c/\partial S^2\)</td></tr>
+            <tr><td>Theta</td><td>Θ</td><td>passage of time</td><td>\(\partial c/\partial t\)</td></tr>
+            <tr><td>Vega</td><td>ν</td><td>volatility \(\sigma\)</td><td>\(\partial c/\partial\sigma\)</td></tr>
+            <tr><td>Rho</td><td>ρ</td><td>interest rate \(r\)</td><td>\(\partial c/\partial r\)</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>The Greeks are the <b>car dashboard</b>. Delta is the <em>speedometer</em> (how fast value changes with the underlying), Gamma is the <em>accelerator pedal's sensitivity</em> (how fast the speed itself changes), Theta is the <em>fuel gauge draining with time</em>, Vega is sensitivity to <em>how shaky the road is</em>.</p></div>
+    </div>
+
+    <!-- MANAGE -->
+    <div class="concept" id="manage">
+      <h2 class="section-h">Managing an option's risk</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>The choices a writer faces after selling an option: do nothing, fully cover, react crudely, or hedge precisely using the Greeks.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Writing options is profitable but risky. Black–Scholes tells you the option's <em>fair cost to hedge</em>; the writer's job is to actually run that hedge so the premium becomes profit rather than a landmine.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Naked:</b> do nothing. If the option finishes out-of-the-money you keep the whole premium; if not, losses can be huge.</li>
+          <li><b>Covered:</b> buy the shares upfront. Safe against a price rise, but costly and exposed if the price falls.</li>
+          <li><b>Stop-loss:</b> hold shares when \(S&gt;K\), sell when \(S&lt;K\). Sounds clever but fails: you always buy a touch high and sell a touch low, and around \(S=K\) you whipsaw. Its cost ≠ the true option cost because cash flows happen at different times and \(S=K\) crossings are ambiguous.</li>
+          <li><b>Greek hedging:</b> use Delta (and Gamma) to neutralise the risks continuously. This is the right answer.</li>
+        </ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Naked = driving with no insurance. Covered = buying a second car "just in case". Stop-loss = slamming the brakes every time you cross a line (you wear out the brakes and still crash). Greek hedging = adaptive cruise control that constantly trims your speed.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example (the running case)</div>
+        <p>Write a European call for $300k on 100k shares. \(S_0=49,\ K=50,\ r=5\%,\ \sigma=20\%,\ T=20/52=0.385\). Black–Scholes says the option is worth ≈ $240k. You banked $300k, so $60k of expected profit — <em>if</em> you hedge the residual risk well.</p></div>
+    </div>
+
+    <!-- DELTA -->
+    <div class="concept" id="delta">
+      <h2 class="section-h">Delta (Δ)</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>How much the option price moves for a $1 move in the underlying — the slope of the price-vs-spot curve.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Delta is the first-order price risk and the <b>hedge ratio</b>: it tells you exactly how many shares to hold to offset an option's price exposure. It's also (roughly) the risk-neutral probability of finishing in the money.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ \Delta=\frac{\partial c}{\partial S},\qquad \Delta_{\text{call}}=N(d_1),\qquad \Delta_{\text{put}}=N(d_1)-1 \]</div>
+        <ul class="legend">
+          <li>Call Delta runs 0→1 (deep OTM→deep ITM); put Delta runs −1→0.</li>
+          <li>A small price change \(\delta S\) changes the option by \(\approx \Delta\,\delta S\) — a linear (first-order) approximation. Options aren't linear, hence "approximately" (Gamma fixes the rest).</li>
+        </ul>
+      </div>
+      <div class="chart-card">
+        <div class="chart-controls">
+          <div class="ctrl"><label>Volatility σ <span class="val" id="g-sv">20%</span></label><input id="g-s" type="range" min="5" max="60" value="20" step="1"></div>
+          <div class="ctrl"><label>Time to maturity T <span class="val" id="g-tv">0.40y</span></label><input id="g-t" type="range" min="2" max="150" value="40" step="2"></div>
+        </div>
+        <div id="ch-delta" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> call & put <b>Delta vs spot</b> (\(K=50\)). The call's Delta is an S-shaped climb 0→1; the put's is the same curve shifted down to −1→0. Shorten T or raise σ and the S-curve flattens/steepens around the strike.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Delta is the option's <b>speedometer</b>: at Δ = 0.6 the option gains $0.60 for every $1 the stock gains — it's "going 60% as fast" as the stock. Deep in the money it tracks the stock 1-for-1 (Δ→1); far out, it barely moves (Δ→0).</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Δ = 0.6, stock rises $1 → call rises ≈ $0.60. Hold 1 short call and you're exposed to +0.6 share-equivalents of price risk.</p></div>
+    </div>
+
+    <!-- DELTA HEDGE -->
+    <div class="concept" id="dhedge">
+      <h2 class="section-h">Delta hedging</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>Holding Δ shares of the underlying against each option so that, for small price moves, the combined position doesn't change value — it becomes "Delta-neutral".</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>It's how option writers turn a risky obligation into a (nearly) riskless harvesting of the premium. It's also the practical embodiment of the no-arbitrage pricing argument.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>A \(\delta S\) move changes the option by \(\approx\Delta\,\delta S\). Hold \(\Delta\) of the underlying and the share leg moves the opposite way by the same amount → net ≈ 0.</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th></th><th>To buy (long)</th><th>To sell (short)</th></tr></thead>
+          <tbody>
+            <tr><td>Call</td><td class="num">−Δ_c</td><td class="num">+Δ_c</td></tr>
+            <tr><td>Put</td><td class="num">−Δ_p</td><td class="num">+Δ_p</td></tr>
+          </tbody>
+        </table></div>
+        <p>Crucially, Δ <b>changes as \(S\) moves and as time passes</b>, so the hedge must be <em>rebalanced continuously</em> — in practice, frequently. This rebalancing cost is what the premium pays for.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Like <b>balancing on a seesaw that keeps shifting</b>. You add weight (shares) to cancel the option's tilt, but as the price moves the required weight changes, so you must keep stepping left and right to stay level.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Sell a call on 2000 shares at \(S=100\), Δ = 0.6. Buy \(0.6\times2000=1200\) shares. If \(S\to101\), the call value rises by \(0.6\Rightarrow\) you owe $0.6×2000 = $1200 more on the option, but your 1200 shares gain $1×1200 = $1200. Net P&L ≈ 0. ✓</p>
+        <p>Short-put case: Δ_p = −0.4, sell 0.4×2000 = 800 shares; same cancellation logic.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Delta & delta hedging</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why must you rebalance a delta hedge?</div><div class="a">Because Delta isn't constant — it changes with \(S\) (that's Gamma) and with time. A hedge that's neutral now drifts off-neutral as the market moves, so you re-trade to restore Δ = 0.</div></div>
+          <div class="qa"><div class="q">What does delta hedging cost, and why isn't it free?</div><div class="a">You repeatedly buy high / sell low while chasing Δ (because of Gamma), plus transaction costs. In the idealised world that cost equals the Black–Scholes premium; frictions make it more.</div></div>
+          <div class="qa follow"><div class="q">A delta-hedged short option — are you risk-free?</div><div class="a">No. You've removed first-order price risk but you're still short Gamma (hurt by big moves) and exposed to Vega (volatility) and Theta. Delta-neutral ≠ risk-free.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- THETA -->
+    <div class="concept" id="theta">
+      <h2 class="section-h">Theta (Θ) — time decay</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>How much value the option loses purely from one day passing, with everything else held still.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Time is the one risk you <b>cannot hedge</b> — it passes for certain. Long-option holders bleed Theta; option writers earn it. It's the "rent" on optionality.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ \Theta_c=-\frac{S_0 N'(d_1)\sigma}{2\sqrt T}-rKe^{-rT}N(d_2),\qquad \Theta_p=-\frac{S_0 N'(d_1)\sigma}{2\sqrt T}+rKe^{-rT}N(-d_2) \]</div>
+        <p class="legend">\(N'(x)=\frac1{\sqrt{2\pi}}e^{-x^2/2}\) is the normal density. Θ is usually <b>negative</b> for long options (value erodes), with exceptions (e.g. deep-ITM European puts, high-\(r\) calls). At-the-money near expiry, Θ becomes sharply negative — time value evaporates fastest right before maturity.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>An option is an <b>ice cube</b>. Even if nothing dramatic happens, it melts a little every day. Near expiry an at-the-money cube melts fastest.</p></div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Θ = −5 (per year, ÷365 for daily) means the option loses about $5/365 ≈ 1.4 cents of value each day from time alone, before any price move.</p></div>
+    </div>
+
+    <!-- GAMMA -->
+    <div class="concept" id="gamma">
+      <h2 class="section-h">Gamma (Γ) — curvature</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div>
+        <p>How fast Delta itself changes as the underlying moves — the curvature (second derivative) of the price curve.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div>
+        <p>Gamma is why a delta hedge isn't perfect: high Gamma means Delta drifts quickly, forcing constant rebalancing. Being <b>short Gamma</b> (the option writer) means large moves hurt you in either direction; being long Gamma means big moves help.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <div class="formula">\[ \Gamma=\frac{\partial\Delta}{\partial S}=\frac{\partial^2 c}{\partial S^2}=\frac{N'(d_1)}{S_0\,\sigma\sqrt T}\;\;(&gt;0\text{ always}) \]</div>
+        <p>Gamma peaks <b>at the money</b> and rises as expiry approaches — exactly where Delta is most unstable.</p>
+      </div>
+      <div class="chart-card">
+        <div class="chart-controls">
+          <div class="ctrl"><label>Volatility σ <span class="val" id="gg-sv">20%</span></label><input id="gg-s" type="range" min="5" max="60" value="20" step="1"></div>
+          <div class="ctrl"><label>Time to maturity T <span class="val" id="gg-tv">0.40y</span></label><input id="gg-t" type="range" min="2" max="150" value="40" step="2"></div>
+        </div>
+        <div id="ch-gamma" class="chart"></div>
+        <div class="chart-cap"><span>📈</span><span><b>What this shows:</b> Gamma (and the matching call price) vs spot. Gamma is a bell peaked at the strike \(K=50\) — Delta changes fastest there. Cut T toward 0 and the peak grows tall and narrow: near expiry, an at-the-money option's Delta flips violently between 0 and 1.</span></div>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>If Delta is your speed, Gamma is how hard you're <b>accelerating</b>. A high-Gamma position is a twitchy steering wheel — tiny moves of the market force big corrections to stay hedged.</p></div>
+    </div>
+
+    <!-- GAMMA HEDGE / TAYLOR -->
+    <div class="concept" id="ghedge">
+      <h2 class="section-h">Gamma-neutral hedging & the Taylor view</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>A small change in the option's value is captured by a second-order Taylor expansion in price and time:</p>
+        <div class="formula">\[ \delta c \approx \Theta\,\delta t + \Delta\,\delta S + \tfrac12\,\Gamma\,(\delta S)^2 \]</div>
+        <p class="legend">Delta-hedging removes the \(\Delta\,\delta S\) term. The leftover \(\tfrac12\Gamma(\delta S)^2\) is the curvature error — exactly the gap a pure delta hedge can't close, and the reason big moves matter even when Δ-neutral.</p>
+        <p><b>Making a portfolio Gamma-neutral:</b> a stock/forward has Γ = 0, so you can only change Gamma by adding <em>another option</em>. To kill portfolio Gamma \(\Gamma_\Pi\) using a traded option with gamma \(\Gamma_T\), add</p>
+        <div class="formula">\[ w_T=-\frac{\Gamma_\Pi}{\Gamma_T}\ \text{units, then re-delta-hedge (the new option shifts }\Delta\text{).} \]</div>
+      </div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example</div>
+        <p>Portfolio is Δ-neutral with \(\Gamma=-3000\). Traded option has \(\Delta_o=0.62,\ \Gamma_o=1.5\). Add \(3000/1.5=2000\) long options → Γ-neutral. But this adds \(2000\times0.62=1240\) to Delta, so <b>sell 1240 shares</b> to restore Δ-neutrality.</p></div>
+      <div class="callout info"><span class="ttl">How desks actually run it</span> Delta-hedge daily; monitor Gamma, Vega, Theta and only act on the others when they get too large. Greeks are additive across a book — the portfolio Greek is the weighted sum of the constituents' Greeks, so they net off.</div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Gamma & higher-order hedging</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Why can't a stock change a portfolio's Gamma?</div><div class="a">A stock (or forward) is linear in \(S\): its second derivative is zero. Only instruments with curvature — options — carry Gamma, so only options can adjust it.</div></div>
+          <div class="qa"><div class="q">You add an option to go Gamma-neutral — what breaks?</div><div class="a">Your Delta. The new option has its own Delta, knocking the book off Δ-neutral, so you must re-hedge Delta with the underlying afterward.</div></div>
+          <div class="qa follow"><div class="q">Long Gamma vs short Gamma — who likes volatility?</div><div class="a">Long Gamma (long options) profits from large moves either way and pays Theta for the privilege. Short Gamma (writer) earns Theta but is hurt by large moves — you're "selling insurance and praying for calm".</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <!-- MORE -->
+    <div class="concept" id="more">
+      <h2 class="section-h">Vega, Rho & beyond Black–Scholes</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Vega (ν):</b> sensitivity to volatility. Always positive for long options — more shakiness = more chance of a big payoff = more value. (Despite the name, it's not a Greek letter.)</li>
+          <li><b>Rho (ρ):</b> sensitivity to the interest rate. Calls gain with higher \(r\) (the strike is discounted more), puts lose.</li>
+        </ul>
+        <p>Beyond Black–Scholes, Greeks come from richer models and numerical methods:</p>
+        <ul>
+          <li><b>Models:</b> Heston (stochastic vol → explains the smile), Merton jump-diffusion (sudden jumps → fat tails), binomial/trinomial trees (American/early exercise).</li>
+          <li><b>Computing Greeks:</b> finite differences (simple, costly), pathwise & likelihood-ratio methods in Monte Carlo, and <b>automatic differentiation</b> (exact, efficient — vital for big books).</li>
+        </ul>
+      </div>
+      <div class="block example"><div class="block-label"><span class="dot example"></span>Worked example — methods disagree</div>
+        <p>An American put (\(S_0=K=100,\ r=5\%,\ \sigma=20\%,\ T=1,\ q=2\%\)) priced three ways: Black–Scholes $9.23 (Δ 0.587), Binomial $7.50 (Δ 0.530), Monte Carlo $7.55 (Δ 0.520). They differ because BS ignores early exercise / dividends — a reminder that the model choice <em>is</em> a modelling decision.</p></div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div>
+        <p>Vega is sensitivity to <b>how bumpy the road looks ahead</b>; Rho is sensitivity to the <b>cost of the money you borrowed for the trip</b>. The fancier models are better weather forecasts for roads that Black–Scholes assumed were perfectly smooth.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Vega / Rho / model choice</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">Sign of Vega for a long call vs long put?</div><div class="a">Both positive. Higher volatility widens the distribution of outcomes; since option payoffs are one-sided (capped loss), more dispersion can only help the holder.</div></div>
+          <div class="qa"><div class="q">Why do calls have positive Rho and puts negative?</div><div class="a">A higher rate discounts the strike \(Ke^{-rT}\) more heavily. For a call you pay \(K\) later → cheaper in PV → call worth more. For a put you receive \(K\) later → worth less.</div></div>
+          <div class="qa follow"><div class="q">When would you abandon Black–Scholes Greeks?</div><div class="a">American/early-exercise features (use trees), pronounced smile/skew (stochastic-vol like Heston), gappy assets (jump-diffusion), or path-dependent exotics (Monte Carlo). The smile itself is the market's signal that constant-σ Greeks are approximate.</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "The Greeks split an option's risk into pieces: <b>Delta</b> (price slope, the hedge ratio), <b>Gamma</b> (curvature — why the delta hedge needs constant rebalancing), <b>Theta</b> (unavoidable time decay), plus Vega and Rho. Writers harvest the premium by delta-hedging continuously; the leftover \(\tfrac12\Gamma\,\delta S^2\) is what big moves and gamma-hedging are about."</div>
+
+    <div class="revise-bar">
+      <button class="btn primary" id="revise-btn" data-id="greeks"><span class="lbl">Mark this topic as revised</span></button>
+      <span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span>
+    </div>
+    <div class="page-nav" id="page-nav"></div>
+
+  </div></main>
+</div>
+<button id="to-top" aria-label="Back to top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+<script>
+function nCDF(x){const t=1/(1+0.2316419*Math.abs(x));const d=0.3989422804014327*Math.exp(-x*x/2);let p=d*t*(0.319381530+t*(-0.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));return x>0?1-p:p;}
+function nPDF(x){return 0.3989422804014327*Math.exp(-x*x/2);}
+function d1f(S,K,r,sig,T){return (Math.log(S/K)+(r+sig*sig/2)*T)/(sig*Math.sqrt(T));}
+function callPrice(S,K,r,sig,T){if(T<=0||sig<=0)return Math.max(S-K,0);const d1=d1f(S,K,r,sig,T),d2=d1-sig*Math.sqrt(T);return S*nCDF(d1)-K*Math.exp(-r*T)*nCDF(d2);}
+function draw(){
+  const C=CF.colors(),K=50,r=0.05;
+  // delta
+  const sigD=(+document.getElementById('g-s').value)/100, TD=(+document.getElementById('g-t').value)/100;
+  document.getElementById('g-sv').textContent=Math.round(sigD*100)+'%';document.getElementById('g-tv').textContent=TD.toFixed(2)+'y';
+  const Sd=[];for(let s=25;s<=75;s+=0.5)Sd.push(s);
+  const dc=Sd.map(s=>nCDF(d1f(s,K,r,sigD,TD)));
+  const dp=Sd.map(s=>nCDF(d1f(s,K,r,sigD,TD))-1);
+  Plotly.react('ch-delta',[
+    {x:Sd,y:dc,name:'Call Delta = N(d₁)',line:{color:C.accent,width:3.5}},
+    {x:Sd,y:dp,name:'Put Delta = N(d₁)−1',line:{color:C.good,width:3,dash:'dash'}}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'Spot  S (strike = 50)',gridcolor:C.grid},yaxis:{title:'Delta',gridcolor:C.grid,zeroline:true,zerolinecolor:C.mute,range:[-1.05,1.05]}}),CF.config);
+  // gamma
+  const sigG=(+document.getElementById('gg-s').value)/100, TG=(+document.getElementById('gg-t').value)/100;
+  document.getElementById('gg-sv').textContent=Math.round(sigG*100)+'%';document.getElementById('gg-tv').textContent=TG.toFixed(2)+'y';
+  const Sg=[];for(let s=25;s<=75;s+=0.5)Sg.push(s);
+  const gam=Sg.map(s=>nPDF(d1f(s,K,r,sigG,TG))/(s*sigG*Math.sqrt(TG)));
+  const pr=Sg.map(s=>callPrice(s,K,r,sigG,TG));
+  Plotly.react('ch-gamma',[
+    {x:Sg,y:gam,name:'Gamma',line:{color:C.how,width:3.5},yaxis:'y'},
+    {x:Sg,y:pr,name:'Call price (right axis)',line:{color:C.accent,width:2,dash:'dot'},yaxis:'y2'}
+  ],CF.layout({hovermode:'x unified',xaxis:{title:'Spot  S (strike = 50)',gridcolor:C.grid},
+    yaxis:{title:'Gamma',gridcolor:C.grid,rangemode:'tozero'},
+    yaxis2:{title:'Call price',overlaying:'y',side:'right',showgrid:false,rangemode:'tozero'}}),CF.config);
+}
+['g-s','g-t','gg-s','gg-t'].forEach(id=>document.getElementById(id).addEventListener('input',draw));
+draw();window.addEventListener('themechange',draw);
+</script>
+</body>
+</html>

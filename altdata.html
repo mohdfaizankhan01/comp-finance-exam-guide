@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alternative Data — Computational Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="topbar"><button class="icon-btn" id="menu-btn"><span class="menu-ic"></span></button><strong style="font-size:15px">Alternative Data</strong><button class="icon-btn" data-theme-toggle style="margin-left:auto"><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span></button></div>
+<div class="layout">
+  <aside class="sidebar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit"><span class="logo">cf</span><span class="brand-txt"><b>Computational Finance</b><span>Oral-exam study guide</span></span></a>
+    <div class="search-wrap"><svg></svg><input id="nav-search" type="search" placeholder="Search topics…" autocomplete="off"></div>
+    <nav id="nav"></nav>
+    <button class="icon-btn" id="theme-toggle" data-theme-toggle><span class="theme-ic-moon"></span><span class="theme-ic-sun"></span><span class="theme-label">Dark mode</span></button>
+  </aside>
+  <main class="content"><div class="content-inner">
+
+    <div class="page-kicker">Lecture 15 · Modern Topics</div>
+    <h1 class="page-title">Alternative Data</h1>
+    <p class="page-lede">Non-traditional data — satellite images, social media, card transactions — used to gain an edge. Promising, messy, and still early-stage.</p>
+
+    <div class="minitoc"><b>On this page</b><ul>
+      <li><a href="#what">What it is & why</a></li>
+      <li><a href="#risk">Risks & challenges</a></li>
+      <li><a href="#process">The process</a></li>
+      <li><a href="#apps">Applications</a></li>
+    </ul></div>
+
+    <div class="concept" id="what">
+      <h2 class="section-h">What it is & why use it</h2>
+      <div class="block what"><div class="block-label"><span class="dot what"></span>What it is</div><p>Data that isn't the usual price/fundamental feed — satellite imagery, social media, GPS/location, web traffic, consumer transactions, ship movements, IoT sensors.</p></div>
+      <div class="block why"><div class="block-label"><span class="dot why"></span>Why it matters</div><p>It can give <b>orthogonal</b> insight (uncorrelated with what everyone else sees), be <b>anticipatory</b> (lead official numbers, like PMI vs GDP), or be <b>complementary</b> (e.g. CO₂ data). Edge comes from seeing what isn't yet in the price.</p></div>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p>No crisp definition, but alt data tends to be: less commonly used, more costly, sourced outside financial markets, with shorter history and harder to use. "Exhaust data" (a by-product of some activity, e.g. trading logs) is one flavour. Only ~1% of available data is currently analysed (McKinsey) — held back by cost, process change and hiring.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Everyone reads the same newspaper (price data). Alt data is <b>counting the cars in the mall car park from a satellite</b> before the sales figures are published — you see the story early, from a different angle.</p></div>
+    </div>
+
+    <div class="concept" id="risk">
+      <h2 class="section-h">Risks & challenges</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <p><b>Risks:</b> legal (personal-data laws vary by region; web scraping may violate terms or use non-public data; contractual limits), quality/validity (noisy tweets, faulty sensors), and vendor risk (data providers can shut down, sometimes due to legal change).</p>
+        <p><b>Challenges:</b> data is <em>unstructured</em> (text, images, video, even handwriting; often no timestamp), riddled with missing values and outliers, hard to <em>match</em> to the right entity, and must be cleaned and aggregated into regular time series by ticker/category.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Alt data is <b>ore, not gold</b>. There's value in there, but it arrives full of dirt (noise), in odd shapes (unstructured), and you need legal permission to mine it — refining it is most of the work.</p></div>
+      <div class="callout warn"><span class="ttl">Outliers nuance</span> "One man's noise is another man's signal." An outlier (an abnormal card transaction, the Jan 2015 EUR/CHF floor break) might be an error to delete — or the very signal you want. Treating outliers is genuinely tricky.</div>
+    </div>
+
+    <div class="concept" id="process">
+      <h2 class="section-h">The process behind usage</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ol>
+          <li>Set vision & strategy (papers, small proof-of-concept).</li>
+          <li>Identify datasets (data scouting).</li>
+          <li>Vendor due diligence (will they survive?).</li>
+          <li>Pre-assess risks (tech, legal, cyber).</li>
+          <li>Pre-assess signal on a sample (POC).</li>
+          <li>Onboard the data → preprocess → extract signal.</li>
+          <li>Productionise → maintain.</li>
+        </ol>
+        <p>It needs new roles — data scouts, strategists, engineers, scientists — and demand is rising. Machine learning is the workhorse for turning unstructured data into signals.</p>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Like <b>opening a new mine</b>: survey the land, check you're allowed to dig, test a sample for gold, then build the full extraction pipeline — and keep maintaining it.</p></div>
+    </div>
+
+    <div class="concept" id="apps">
+      <h2 class="section-h">Applications</h2>
+      <div class="block how"><div class="block-label"><span class="dot how"></span>How it works</div>
+        <ul>
+          <li><b>Missing-data / outliers:</b> imputation and anomaly detection (KNN, LOF, autoencoders) as essential first steps.</li>
+          <li><b>Satellite imagery:</b> counting cars in store car parks to estimate earnings; explaining export growth.</li>
+          <li><b>Location data:</b> GPS footfall scores vs earnings estimates (e.g. Thasos index).</li>
+          <li><b>Text/social/news:</b> sentiment from Twitter (Hedonometer happiness index regressed on the S&P), Twitter-enhanced payroll forecasts, news-based currency scores.</li>
+          <li><b>Investor attention:</b> Google Trends, Investopedia Anxiety Index (adds value beyond the VIX).</li>
+          <li><b>Consumer transactions:</b> credit-card panels (Mastercard SpendingPulse), anonymised receipts.</li>
+        </ul>
+      </div>
+      <div class="block analogy"><div class="block-label"><span class="dot analogy"></span>Analogy</div><p>Each source is a <b>different sense</b>: satellites are eyes on the ground, social media is the crowd's mood, card data is the economy's pulse — combined, they sketch the picture before the official report lands.</p></div>
+      <details class="acc"><summary><span class="tag exam">Examiner might ask</span> Alt-data probes</summary>
+        <div class="acc-body">
+          <div class="qa"><div class="q">What makes data "alternative", and why use it?</div><div class="a">It's non-traditional (satellite, social, transactions), costly, often unstructured, with short history. The value is orthogonal, anticipatory, or complementary insight — an edge from information not yet in the price.</div></div>
+          <div class="qa"><div class="q">Give a concrete successful example.</div><div class="a">Counting cars in retailer car parks via satellite to forecast quarterly earnings ahead of the official release; or Twitter sentiment predicting NFP surprises.</div></div>
+          <div class="qa"><div class="q">Main challenges?</div><div class="a">Legal/privacy risk, vendor risk, and heavy data-engineering: unstructured formats, missing values, outliers, entity matching, and aggregation into clean time series.</div></div>
+          <div class="qa follow"><div class="q">Is more alt data always better?</div><div class="a">No — as one CEO (Man Group) noted, data grows faster than the resources to exploit it, so they used <em>less</em> over time. Signal extraction and process discipline matter more than volume. But firms ignoring it risk being outmanoeuvred (Deloitte).</div></div>
+        </div></div>
+      </details>
+    </div>
+
+    <div class="callout good" style="margin-top:30px"><span class="ttl">One-line story for the exam</span> "Alternative data — satellite, social, location, transactions — offers orthogonal, anticipatory insight before it hits official numbers. It's powerful but early-stage: unstructured, costly, legally fraught and full of outliers, so most of the work is a disciplined pipeline (scout → vet → POC → onboard → extract signal with ML → maintain)."</div>
+
+    <div class="revise-bar"><button class="btn primary" id="revise-btn" data-id="altdata"><span class="lbl">Mark this topic as revised</span></button><span style="color:var(--text-mute);font-size:14px">Saved in this browser.</span></div>
+    <div class="page-nav" id="page-nav"></div>
+  </div></main>
+</div>
+<button id="to-top"><span class="totop-ic"></span></button>
+<script src="assets/app.js"></script>
+</body>
+</html>
